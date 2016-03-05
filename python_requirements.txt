@@ -1,3 +1,4 @@
+nose-parameterized==0.5.0
 numpy==1.10.4
 scipy==0.17.0
 wheel==0.24.0

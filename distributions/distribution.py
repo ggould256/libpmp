@@ -47,3 +47,8 @@ class Distribution(object):
             lambda x: (self.cdf(x) - p) ** 2,
             x0=[start])
         return result[0]
+
+    def contains_point_masses(self):
+        """Tests may be wrong when a pdf contains a Dirac delta point.  Set
+        this true if so."""
+        return False

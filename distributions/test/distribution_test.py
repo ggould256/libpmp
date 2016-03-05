@@ -3,16 +3,19 @@
 # This software is provided under the MIT license, a copy of which is
 # available in the LICENSE file of this project.
 
-import distributions.log_logistic
+from distributions.log_logistic import LogLogistic
+from distributions.point_distribution import PointDistribution
 
 import math
 from nose_parameterized import parameterized
 import unittest
 
 distributions_to_test = [[dut] for dut in (
-    distributions.log_logistic.LogLogistic(10, 0.5),
-    distributions.log_logistic.LogLogistic(10, 1),
-    distributions.log_logistic.LogLogistic(10, 2))]
+    LogLogistic(10, 0.5),
+    LogLogistic(10, 1),
+    LogLogistic(10, 2),
+    PointDistribution({2:1})
+    )]
 
 
 class DistributionRulesTest(unittest.TestCase):
@@ -55,7 +58,9 @@ class DistributionRulesTest(unittest.TestCase):
         for p in [0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 0.99]:
             t = dut.quantile(p)
             approximated_p = dut.cdf(t)
-            self.assertAlmostEqual(p, approximated_p)
+            epsilon = (
+                0.0001 if not dut.contains_point_masses() else dut.pdf(t))
+            self.assertAlmostEqual(p, approximated_p, delta=epsilon)
 
 
 if __name__ == "__main__":

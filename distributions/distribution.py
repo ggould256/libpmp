@@ -4,30 +4,29 @@
 
 import scipy
 
-"""Abstract class for random variables of time, along with some very
-basic utilities for manipulating them."""
+"""Abstract class for probability distributions of resources, along with some
+very basic utilities for manipulating them."""
 
 class Distribution(object):
-    """Abstract class representing a random variable of time.  Time is
-    denominated in hours."""
+    """Abstract class representing a random variable of some resource."""
 
-    def cdf(self, t):
-        """@Returns the cumulative value at @p t (that is, the fraction of
-        the distribution that is <= t).  This is the inverse of the quantile
+    def cdf(self, x):
+        """@Returns the cumulative value at @p x (that is, the fraction of
+        the distribution that is <= x).  This is the inverse of the quantile
         function below.
         NOTE: CDF MUST BE MONOTONIC INCREASING.
-        NOTE: CDF(t) MUST BE ZERO FOR ALL t < 0.
-        NOTE: CDF(t) MUST APPROACH 1 AT ITS UPPER LIMIT."""
+        NOTE: CDF(x) MUST BE ZERO FOR ALL x < 0.
+        NOTE: CDF(x) MUST APPROACH 1 AT ITS UPPER LIMIT."""
         return NotImplementedError("Distribution classes must define cdf.")
 
-    def pdf(self, t):
-        """@Returns the point value at @p t (that is, the probability-per-hour
-        measure at t).  If the distribution is approximated or discretized,
-        this may measure the average pdf between t and t+1, or the closest
+    def pdf(self, x):
+        """@Returns the point value at @p x (that is, the probability-per-hour
+        measure at x).  If the distribution is approximated or discretized,
+        this may measure the average pdf between x and x+1, or the closest
         reasonable analogue to that.
         NOTE: PDF MUST BE EVERYWHERE NONNEGATIVE.
-        NOTE: PDF(t) MUST BE ZERO FOR ALL t < 0.
-        NOTE: PDF(t) MUST APPROACH ZERO AT ITS UPPER LIMIT."""
+        NOTE: PDF(x) MUST BE ZERO FOR ALL x < 0.
+        NOTE: PDF(x) MUST APPROACH ZERO AT ITS UPPER LIMIT."""
         return NotImplementedError("Distribution classes must define pdf.")
 
     def point_on_curve(self):
@@ -37,9 +36,9 @@ class Distribution(object):
                                    "point_on_curve")
 
     def quantile(self, p):
-        """@Returns the time of probability quantile @p p.  For example,
-        quantile(0.2) gives the time that 20% of the distribution has passed;
-        quantile(0.5) gives the median."""
+        """@Returns the resource level of probability quantile @p p.  For
+        example, quantile(0.2) gives the amount of resource that 20% of the
+        distribution consumes; quantile(0.5) gives the median."""
         # Default (slow) implementation; subclasses with closed-form quantile
         # functions should override.
         start = self.point_on_curve()

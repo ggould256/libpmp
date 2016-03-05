@@ -5,10 +5,10 @@
 from distributions.distribution import Distribution
 
 class LogLogistic(Distribution):
-    """Log-logistic distribution.  This distribution empirically fits many
-    software projects and has an easy algebraic CDF, PDF, and quantile
-    function that allows scipy to do quick and easy curve fitting from
-    multipoint estimates."""
+    """Log-logistic distribution.  This distribution empirically fits the
+    time cost of many software projects and has an easy algebraic CDF, PDF,
+    and quantile function that allows scipy to do quick and easy curve fitting
+    from multipoint estimates."""
 
     def __init__(self, alpha, beta):
         """Creates a log-logistic distribution of the given parameters.

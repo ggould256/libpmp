@@ -18,7 +18,7 @@ class PointDistribution(Distribution):
                                for key in self._values}
 
     def pdf(self, x):
-        return self._probabilities.get(x, 0)
+        return float("inf") if x in self._probabilities else 0
 
     def cdf(self, x):
         total_probability = 0

@@ -5,6 +5,7 @@
 
 from distributions.log_logistic import LogLogistic
 from distributions.point_distribution import PointDistribution
+from distributions.uniform import UniformDistribution
 
 import math
 from nose_parameterized import parameterized
@@ -14,7 +15,9 @@ distributions_to_test = [[dut] for dut in (
     LogLogistic(10, 0.5),
     LogLogistic(10, 1),
     LogLogistic(10, 2),
-    PointDistribution({2:1})
+    PointDistribution({2:1}),
+    UniformDistribution(0, 3),
+    UniformDistribution(1, 1.4),
     )]
 
 

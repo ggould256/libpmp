@@ -63,3 +63,6 @@ target/
 
 # PyCharm stuff
 .idea/
+
+# Emacs stuff
+*~

@@ -14,6 +14,7 @@
 
 from distributions.distribution import Distribution
 
+
 class LogLogistic(Distribution):
     """Log-logistic distribution.  This distribution empirically fits the
     time cost of many software projects and has an easy algebraic CDF, PDF,
@@ -31,7 +32,8 @@ class LogLogistic(Distribution):
         # Use variable names 'x', 'a', and 'b' for comparability to wikipedia.
         a = self._alpha
         b = self._beta
-        if x <= 0: return 0
+        if x <= 0:
+            return 0
         return ((b / a) * (x / a) ** (b - 1) /
                 (1 + (x / a) ** b) ** 2)
 
@@ -39,7 +41,8 @@ class LogLogistic(Distribution):
         # Use variable names 'x', 'a', and 'b' for comparability to wikipedia.
         a = self._alpha
         b = self._beta
-        if x <= 0: return 0
+        if x <= 0:
+            return 0
         return 1 / (1 + (x / a) ** -b)
 
     def point_on_curve(self):

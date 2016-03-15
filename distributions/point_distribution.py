@@ -14,6 +14,7 @@
 
 from distributions.distribution import Distribution
 
+
 class PointDistribution(Distribution):
     """Class representing a distribution that can take only a number of
     discrete values with associated probabilities."""

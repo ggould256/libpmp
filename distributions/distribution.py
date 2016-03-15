@@ -17,6 +17,7 @@ import scipy
 """Abstract class for probability distributions of resources, along with some
 very basic utilities for manipulating them."""
 
+
 class Distribution(object):
     """Abstract class representing a random variable of some resource."""
 

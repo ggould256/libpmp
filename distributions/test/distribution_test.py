@@ -17,6 +17,7 @@
 from distributions.log_logistic import LogLogistic
 from distributions.point_distribution import PointDistribution
 from distributions.uniform import UniformDistribution
+from distributions.numeric import NumericDistribution
 
 import math
 from nose_parameterized import parameterized
@@ -26,9 +27,11 @@ distributions_to_test = [[dut] for dut in (
     LogLogistic(10, 0.5),
     LogLogistic(10, 1),
     LogLogistic(10, 2),
-    PointDistribution({2:1}),
+    PointDistribution({2: 1}),
     UniformDistribution(0, 3),
     UniformDistribution(1, 1.4),
+    NumericDistribution([1, 4, 6, 4, 1], offset=500),
+    NumericDistribution([16, 9, 4, 1]),
     )]
 
 
@@ -74,7 +77,9 @@ class DistributionRulesTest(unittest.TestCase):
             approximated_p = dut.cdf(t)
             epsilon = (
                 0.0001 if not dut.contains_point_masses() else dut.pdf(t))
-            self.assertAlmostEqual(p, approximated_p, delta=epsilon)
+            self.assertAlmostEqual(p, approximated_p, delta=epsilon,
+                                   msg=("Failed quantile check at p=%f t=%f" %
+                                        (p, t)))
 
 
 if __name__ == "__main__":

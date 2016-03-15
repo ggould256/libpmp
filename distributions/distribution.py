@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import scipy
+import scipy.optimize
 
 """Abstract class for probability distributions of resources, along with some
 very basic utilities for manipulating them."""
@@ -56,8 +56,9 @@ class Distribution(object):
         assert self.pdf(start) > 0  # Or else scipy will run forever.
         result = scipy.optimize.minimize(
             lambda x: (self.cdf(x) - p) ** 2,
+            bounds=[(0, None)],
             x0=[start])
-        return result[0]
+        return result.x[0]
 
     def contains_point_masses(self):
         """Tests may be wrong when a pdf contains a Dirac delta point.  Set

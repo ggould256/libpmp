@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TESTS = distributions/test/distribution_test.py
+TESTS = distributions/test/distribution_test.py \
+        distributions/test/operations_test.py
+
 TEST_RESULTS = $(TESTS:.py=.result)
 
 all: test

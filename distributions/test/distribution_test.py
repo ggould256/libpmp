@@ -18,6 +18,7 @@ from distributions.log_logistic import LogLogistic
 from distributions.point_distribution import PointDistribution
 from distributions.uniform import UniformDistribution
 from distributions.numeric import NumericDistribution
+import distributions.operations as ops
 
 import math
 from nose_parameterized import parameterized
@@ -32,6 +33,7 @@ distributions_to_test = [[dut] for dut in (
     UniformDistribution(1, 1.4),
     NumericDistribution([1, 4, 6, 4, 1], offset=500),
     NumericDistribution([16, 9, 4, 1]),
+    ops.dist_add(UniformDistribution(0, 1), UniformDistribution(0, 1)),
     )]
 
 

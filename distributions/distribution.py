@@ -53,7 +53,7 @@ class Distribution(object):
         # Default (slow) implementation; subclasses with closed-form quantile
         # functions should override.
         start = self.point_on_curve()
-        assert self.pdf(start) > 0  # Or else scipy will run forever.
+        assert self.pdf(start) > 0, "PDF zero at %d on %s" % (start, self)
         result = scipy.optimize.minimize(
             lambda x: (self.cdf(x) - p) ** 2,
             bounds=[(0, None)],

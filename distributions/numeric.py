@@ -24,13 +24,15 @@ class NumericDistribution(Distribution):
     automatically scaled to the sum of those PDF values to avoid numeric
     error."""
 
-    def __init__(self, values, offset=0):
+    def __init__(self, values, offset=0, epsilon=0.001):
         """@p values is a list of PDF values P[i] (automatically normalized)
         representing the probability of an outcome between offset+i and
         offset+i+1."""
         self._values = values
         self._offset = int(offset)
         self._scale = 1 / sum(values)
+        while (self._values[-1] * self._scale) < epsilon:
+            self._values = self._values[:-1]
 
     BEFORE, AFTER = [-3, -2]
 
@@ -69,3 +71,7 @@ class NumericDistribution(Distribution):
 
     def contains_point_masses(self):
         return False
+
+    def __repr__(self):
+        return "NumericDistribution(offset=%d, scale=%f, %s)" % (
+            self._offset, self._scale, self._values)

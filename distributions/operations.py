@@ -14,6 +14,7 @@
 
 import math
 
+from distributions.distribution import Distribution, ZERO
 from distributions.numeric import NumericDistribution
 
 """Operations on distributions.
@@ -39,6 +40,11 @@ def dist_add(l, r, epsilon=0.01):
     # the result pdf (that is, dCDF[l](0..1) + dCDF[r](0..1) contribute to
     # pdf(0..2)).
 
+    if l == ZERO:
+        return r
+    if r == ZERO:
+        return l
+
     # First, find the domains where the addends' CDFs are >= epsilon and use
     # that to determine the domain of the result (y).
     l_min = int(math.floor(l.quantile(epsilon)))
@@ -60,3 +66,32 @@ def dist_add(l, r, epsilon=0.01):
             y_values[x_l + x_r - y_min] += x_l_prob * x_r_prob
             y_values[x_l + x_r - y_min + 1] += x_l_prob * x_r_prob
     return NumericDistribution(y_values, offset=y_min)
+
+
+def dist_scale(dist, scale):
+    """Return a distribution whose values are scaled by @p scale."""
+
+    if scale == 0:
+        return ZERO
+
+    class ScaleWrapper(Distribution):
+        def __init__(self, parent, _scale):
+            self._parent = parent
+            self._scale = _scale
+
+        def cdf(self, x):
+            return self._parent.cdf(x / self._scale)
+
+        def pdf(self, x):
+            return self._parent.pdf(x / self._scale) / self._scale
+
+        def point_on_curve(self):
+            return self._parent.point_on_curve() * self._scale
+
+        def quantile(self, p):
+            return self._parent.quantile(p) * self._scale
+
+        def contains_point_masses(self):
+            return self._parent.contains_point_masses()
+
+    return ScaleWrapper(dist, scale)

@@ -64,3 +64,19 @@ class Distribution(object):
         """Tests may be wrong when a pdf contains a Dirac delta point.  Set
         this true if so."""
         return False
+
+
+class _ZeroDistribution(Distribution):
+
+    def cdf(self, x): return 1
+
+    def pdf(self, x): return 0
+
+    def point_on_curve(self): return 0
+
+    def quantile(self, p): return 0
+
+    def contains_point_masses(self): return True
+
+
+ZERO = _ZeroDistribution()

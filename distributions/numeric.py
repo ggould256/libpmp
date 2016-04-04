@@ -33,6 +33,10 @@ class NumericDistribution(Distribution):
         self._scale = 1 / sum(values)
         while (self._values[-1] * self._scale) < epsilon:
             self._values = self._values[:-1]
+        assert self._scale > 0, (
+            "NumericDistribution(%s) had zero scale" % values)
+        assert self._scale < float("inf"), (
+            "NumericDistribution(%s) had inf scale" % values)
 
     BEFORE, AFTER = [-3, -2]
 

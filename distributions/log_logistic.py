@@ -12,7 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import scipy.optimize
+
 from distributions.distribution import Distribution
+
+
+def _log_logistic_cdf(x, a, b):
+    """See https://en.wikipedia.org/wiki/Log-logistic_distribution"""
+    # Use variable names 'x', 'a', and 'b' for comparability to wikipedia.
+    if x <= 0:
+        return 0
+    return 1 / (1 + (x / a) ** -b)
 
 
 class LogLogistic(Distribution):
@@ -38,12 +48,7 @@ class LogLogistic(Distribution):
                 (1 + (x / a) ** b) ** 2)
 
     def cdf(self, x):
-        # Use variable names 'x', 'a', and 'b' for comparability to wikipedia.
-        a = self._alpha
-        b = self._beta
-        if x <= 0:
-            return 0
-        return 1 / (1 + (x / a) ** -b)
+        return _log_logistic_cdf(x, self._alpha, self._beta)
 
     def point_on_curve(self):
         return self._alpha
@@ -53,3 +58,35 @@ class LogLogistic(Distribution):
         a = self._alpha
         b = self._beta
         return a * (p / (1 - p)) ** (1 / b)
+
+    @staticmethod
+    def fit(first_quantile_p, first_quantile_x,
+            second_quantile_p, second_quantile_x):
+        """Fit a log-logistic curve to the given fractions.  For instance if
+        you want a curve with 8 as its 10th percentile and 40 as its 75th
+        percentile, you would call fit(0.1, 8, 0.75, 40)."""
+        assert (0 < first_quantile_p < second_quantile_p < 1)
+        assert (0 < first_quantile_x < second_quantile_x)
+        start = [0.5 * (first_quantile_x + second_quantile_x), 1]
+
+        def error(ab):
+            a, b = ab
+            return (
+                (_log_logistic_cdf(first_quantile_x, a, b) -
+                 first_quantile_p) ** 2 +
+                (_log_logistic_cdf(second_quantile_x, a, b) -
+                 second_quantile_p) ** 2)
+
+        result = scipy.optimize.fmin_cg(error, x0=start, disp=0)
+
+        alpha, beta = result
+        assert alpha > 0, "fitting of %f:%f %f:%f yielded alpha of %s" % (
+            first_quantile_p, first_quantile_x,
+            second_quantile_p, second_quantile_x,
+            alpha)
+        assert beta >= 0, "fitting of %f:%f %f:%f yielded beta of %s" % (
+            first_quantile_p, first_quantile_x,
+            second_quantile_p, second_quantile_x,
+            beta)
+
+        return LogLogistic(alpha, beta)

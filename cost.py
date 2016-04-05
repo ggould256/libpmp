@@ -33,7 +33,7 @@ def main():
 
     def dump_quantiles(indent, node):
         print(' ' * indent,
-              ":".join(str(node.cost().quantile(q / 100))
+              " : ".join("%d" % node.cost().quantile(q / 100)
                        for q in (10, 25, 50, 75, 90)))
 
     # Print out the tree.

@@ -45,6 +45,7 @@ class Node(object):
         self.data = ''
         self.resource = ""
         self.distribution = None
+        self._memoized_cost = {}
 
     def format_distribution(self):
         if self.distribution is None:
@@ -57,10 +58,22 @@ class Node(object):
         return '(%s,%s,%s)' % tuple(fmt(self.distribution.quantile(p))
                                     for p in [0.1, 0.5, 0.9])
 
+    def final_cost(self, config=None):
+        """Like 'cost', but assumes that no changes can be made after a call,
+        and thus memoizes the result."""
+        return self._cost_raw(config, final=True)
+
     def cost(self, config=None):
+        return self._cost_raw(config, final=False)
+
+    def _cost_raw(self, config, final):
         """Return the "cost" of this node, with resource costs defined by the
         given config.  If no config is given, all resources are treated as
         cost 1."""
+        if final:
+            if config in self._memoized_cost:
+                return self._memoized_cost[config]
+
         cost_so_far = self.distribution
         if config:
             multiplier = config.resource_costs.get(self.resource, 0)
@@ -69,12 +82,16 @@ class Node(object):
             else:
                 cost_so_far = None
         for c in self.children:
-            c_cost = c.cost(config)
+            c_cost = c._cost_raw(config, final)
             if cost_so_far is None or c_cost is None:
                 cost_so_far = cost_so_far or c_cost
             else:
                 cost_so_far = dist_add(cost_so_far, c_cost)
-        return cost_so_far or ZERO
+
+        result = cost_so_far or ZERO
+        if final:
+            self._memoized_cost[config] = result
+        return result
 
 
 def fit_curve(value_10, value_75):

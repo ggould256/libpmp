@@ -34,6 +34,8 @@ distributions_to_test = [[dut] for dut in (
     NumericDistribution([1, 4, 6, 4, 1], offset=500),
     NumericDistribution([16, 9, 4, 1]),
     ops.dist_add(UniformDistribution(0, 1), UniformDistribution(0, 1)),
+    ops.dist_add(LogLogistic.fit(0.1, 10, 0.75, 100),
+                 LogLogistic.fit(0.1, 20, 0.75, 30)),
     )]
 
 

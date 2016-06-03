@@ -24,15 +24,13 @@ class NumericDistribution(Distribution):
     automatically scaled to the sum of those PDF values to avoid numeric
     error."""
 
-    def __init__(self, values, offset=0, epsilon=0.001):
+    def __init__(self, values, offset=0):
         """@p values is a list of PDF values P[i] (automatically normalized)
         representing the probability of an outcome between offset+i and
         offset+i+1."""
         self._values = values
         self._offset = int(offset)
         self._scale = 1 / sum(values)
-        while (self._values[-1] * self._scale) < epsilon:
-            self._values = self._values[:-1]
         assert self._scale > 0, (
             "NumericDistribution(%s) had zero scale" % values)
         assert self._scale < float("inf"), (

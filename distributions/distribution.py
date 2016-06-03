@@ -52,13 +52,19 @@ class Distribution(object):
         distribution consumes; quantile(0.5) gives the median."""
         # Default (slow) implementation; subclasses with closed-form quantile
         # functions should override.
-        start = self.point_on_curve()
-        assert self.pdf(start) > 0, "PDF zero at %d on %s" % (start, self)
-        result = scipy.optimize.minimize(
-            lambda x: (self.cdf(x) - p) ** 2,
-            bounds=[(0, None)],
-            x0=[start])
-        return result.x[0]
+        start = 0.0
+        end = start
+
+        # First, scan to find our end point.
+        while self.cdf(end) <= p:
+            end = 2 * end if end != 0 else 1
+
+        # Then do a simple bisect.
+        result = scipy.optimize.bisect(
+            lambda x: (self.cdf(x) - p),
+            start,
+            end)
+        return result
 
     def contains_point_masses(self):
         """Tests may be wrong when a pdf contains a Dirac delta point.  Set

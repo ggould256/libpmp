@@ -27,6 +27,9 @@ distribution and model objects.
 """
 
 
+_ADD_RESOLUTION = 100
+
+
 def dist_add(l, r, epsilon=0.01):
     """Returns the sum of random variables distributed by @p l and @p r.  The
     sum of random variables has a pdf that is the convolution of the pdfs of
@@ -56,12 +59,15 @@ def dist_add(l, r, epsilon=0.01):
     y_width = y_max - y_min
     y_values = [0] * (y_width + 2)
 
+    l_step = max(1, int((l_max - l_min) / _ADD_RESOLUTION))
+    r_step = max(1, int((r_max - r_min) / _ADD_RESOLUTION))
+
     # Compute the added distribution by repeatedly adding in shifted copies
     # of r, counting on NumericDistribution's normalization to pick up the
     # pieces afterward.
-    for x_l in range(l_min, l_max + 1):
+    for x_l in range(l_min, l_max + 1, l_step):
         x_l_prob = l.cdf(x_l + 1) - l.cdf(x_l)
-        for x_r in range(r_min, r_max + 1):
+        for x_r in range(r_min, r_max + 1, r_step):
             x_r_prob = r.cdf(x_r + 1) - r.cdf(x_r)
             y_values[x_l + x_r - y_min] += x_l_prob * x_r_prob
             y_values[x_l + x_r - y_min + 1] += x_l_prob * x_r_prob

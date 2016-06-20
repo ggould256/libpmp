@@ -23,11 +23,19 @@ import CommonMark.render.renderer
 import model.node
 
 
-ESTIMATE_RE = re.compile('{[\d-]+}')
+ESTIMATE_RE = re.compile('{.*}$')
 HEADING_SCALE = 10
 
 
 class NodeParser(CommonMark.render.renderer.Renderer):
+    # The NodeParser will be invoked by CommonMark on entrance and exit to
+    # various syntactic elements.  It is flatly syntactic -- entry and exit to
+    # headers *both* happen before any of the section text -- with the
+    # exception of item(), which is actually recursive.
+    #
+    # Thus the code below treats item entry and exit as simple tree traversal,
+    # while headers are handled quite differently (see header() for details).
+
     def __init__(self):
         super(NodeParser, self).__init__()
         self.root = model.node.Node()
@@ -35,40 +43,64 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         self.root.level = 0
         self.current = self.root
 
+    def _start_child(self, level):
+        new_node = model.node.Node()
+        new_node.parent = self.current
+        new_node.level = level
+        self.current.children.append(new_node)
+        self.current = new_node
+
+    def _start_sibling(self):
+        new_node = model.node.Node()
+        new_node.parent = self.current.parent
+        new_node.level = self.current.level
+        self.current.parent.children.append(new_node)
+        self.current = new_node
+
     def text(self, node, entering=None):
-        self.current.data += node.literal
+        if "Table of Contents" in node.literal:
+            # Special case to avoid double-counting hours in section
+            # headers that are duplicated in the ToC.
+            return
+        self.current.data += node.literal.rstrip()
 
     def paragraph(self, node, entering):
+        # Which text gets an enclosing para and which does not seems obscure,
+        # so just treat para ends as node boundaries to be sure of not missing
+        # estimates at ends of lines.
+        if entering == False and self.current.data:
+            self._start_sibling()
+
+    def item(self, node, entering):
         if not entering:
+            self.current = self.current.parent
             return
 
-        if self.current is not self.root:
-            self.current = self.current.parent
-
-        new_node = model.node.Node()
-        new_node.parent = self.current
-        new_node.level = new_node.parent.level + 1
-        self.current.children.append(new_node)
-        self.current = new_node
+        self._start_child(self.current.parent.level + 0.1)
 
     def heading(self, node, entering):
-        level_up = 0
-        if not entering:
-            level_up = 1
+        # We must create a node for the heading itself (any text between
+        # entering and leaving the heading) and a child for the first text
+        # child of the heading (to start absorbing paragraph text).
+        #
+        # We must make the node tree depths correlate with the heading levels
+        # as much as practical, so that the node tree resembles the heading
+        # tree.
 
-        this_level = node.level * HEADING_SCALE + level_up
-
-        while self.current is not self.root:
-            if this_level > self.current.level:
-                break
-            self.current = self.current.parent
-
-        new_node = model.node.Node()
-        new_node.parent = self.current
-        new_node.level = this_level
-
-        self.current.children.append(new_node)
-        self.current = new_node
+        if entering:
+            if node.level > self.current.level:
+                self._start_child(node.level)
+            elif node.level == self.current.level:
+                self._start_sibling()
+            else:
+                while ((self.current.parent is not self.root) and
+                       (node.level <= self.current.level)):
+                    self.current = self.current.parent
+                self._start_sibling()
+            return
+        else:
+            if self.current is not self.root:
+                self._start_child(node.level + 0.001)
 
 
 def process_tree(parent_node):
@@ -84,7 +116,8 @@ def process_tree(parent_node):
     if len(possible_data) > 1:
         raise RuntimeError('multiple estimates found in one block')
     elif len(possible_data) == 1:
-        parent_node.distribution = model.node.make_distribution(possible_data[0])
+        parent_node.distribution = model.node.make_distribution(
+            possible_data[0])
 
 
 def from_markdown(markdown_text):

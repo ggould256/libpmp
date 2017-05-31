@@ -45,6 +45,13 @@ class DistributionRulesTest(unittest.TestCase):
                                 [0, 0.125, 0.5, 0.875, 1, 1],
                                 offset=2)
 
+    def test_scale(self):
+        base = LogLogistic(10, 2)
+        scaled = op.dist_scale(base, 2)
+        for i in range(2000):
+            self.assertEqual(base.pdf(i / 100.), scaled.pdf(i / 50.) * 2)
+            self.assertEqual(base.cdf(i / 100.), scaled.cdf(i / 50.))
+
 
 if __name__ == "__main__":
     unittest.main()

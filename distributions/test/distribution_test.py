@@ -21,7 +21,7 @@ from distributions.numeric import NumericDistribution
 import distributions.operations as ops
 
 import math
-from nose_parameterized import parameterized
+from parameterized import parameterized
 import unittest
 
 distributions_to_test = [[dut] for dut in (

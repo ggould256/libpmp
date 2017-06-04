@@ -1,0 +1,4 @@
+pip3 install virtualenvwrapper
+mkvirtualenv --python=/usr/bin/python3 libpmp
+Setting project for libpmp to /home/ggould/git/libpmp
+pip3 install -r python_requirements.txt

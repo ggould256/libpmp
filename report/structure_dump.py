@@ -17,7 +17,7 @@
 
 def dump_quantiles(indent, node):
     print(' ' * indent,
-          " : ".join("%d" % node.final_cost().quantile(q / 100)
+          " : ".join("%d" % round(node.final_cost().quantile(q / 100))
                      for q in (10, 25, 50, 75, 90)))
 
 def dump_node(indent, node, level, args):

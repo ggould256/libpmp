@@ -13,7 +13,8 @@
 # limitations under the License.
 
 TESTS = distributions/test/distribution_test.py \
-        distributions/test/operations_test.py
+        distributions/test/operations_test.py \
+        model/test/markdown_test.py
 
 TEST_RESULTS = $(TESTS:.py=.result)
 

@@ -86,5 +86,18 @@ class DistributionRulesTest(unittest.TestCase):
                                         (p, t)))
 
 
+fits_to_test = [[dut] for dut in ((8, 40), (20, 30), (100, 200))]
+
+"""Test curve fitting on some common 10-75 estimate pairs."""
+class FitTest(unittest.TestCase):
+
+    @parameterized.expand(fits_to_test)
+    def test_fit(self, points):
+        (ten, seventyfive) = points
+        dist = LogLogistic.fit(0.1,  ten, 0.75, seventyfive)
+        self.assertAlmostEqual(dist.quantile(0.1), ten, delta=1)
+        self.assertAlmostEqual(dist.quantile(0.75), seventyfive, delta=1)
+
+
 if __name__ == "__main__":
     unittest.main()

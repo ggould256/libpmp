@@ -82,7 +82,16 @@ class LogLogistic(Distribution):
                 (_log_logistic_cdf(second_quantile_x, a, b) -
                  second_quantile_p) ** 2)
 
-        result = scipy.optimize.fmin_cg(error, x0=start, disp=0)
+        def debug_log(ab):
+            a, b = ab
+            dist = LogLogistic(a, b)
+            print("Iterating: a =", a, " b =", b, " e =", error(ab))
+            print("Fit: ",
+                  dist.quantile(first_quantile_p), " vs ", first_quantile_x,
+                  dist.quantile(second_quantile_p), " vs ", second_quantile_x)
+
+        # Add callback=debug_log to debug solver convergence.
+        result = scipy.optimize.fmin_bfgs(error, x0=start, disp=0)
 
         alpha, beta = result
         assert alpha > 0, "fitting of %f:%f %f:%f yielded alpha of %s" % (

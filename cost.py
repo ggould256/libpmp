@@ -22,7 +22,7 @@ import argparse
 
 from model.from_html import from_html
 from model.from_markdown import from_markdown
-
+import report.structure_dump
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -30,33 +30,15 @@ def main():
                         help='maximum levels to show', default=2)
     parser.add_argument('input')
 
-    result = parser.parse_args()
+    args = parser.parse_args()
 
-    data = open(result.input).read()
-    if result.input.endswith('.html'):
+    data = open(args.input).read()
+    if args.input.endswith('.html'):
         root = from_html(data)
     else:
         root = from_markdown(data)
 
-    def dump_quantiles(indent, node):
-        print(' ' * indent,
-              " : ".join("%d" % node.final_cost().quantile(q / 100)
-                       for q in (10, 25, 50, 75, 90)))
-
-    # Print out the tree.
-    def dump_node(indent, node, level):
-        if level >= result.levels:
-            return
-        print(' ' * indent, node.tag, ':',
-              node.format_distribution(),
-              node.data)
-        dump_quantiles(indent + 1, node)
-        for child in node.children:
-            dump_node(indent + 2, child, level + 1)
-
-    dump_node(0, root, 0)
-    print("TOTAL:")
-    dump_quantiles(0, root)
+    report.structure_dump.report(root, args)
 
 
 if __name__ == '__main__':

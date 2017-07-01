@@ -18,7 +18,11 @@ TESTS = distributions/test/distribution_test.py \
 
 TEST_RESULTS = $(TESTS:.py=.result)
 
-all: test
+all: test check_deps
+
+.PHONY: check_deps
+check_deps : python_requirements.txt
+	! (pip3 freeze | diff - $< | grep '^>')
 
 %.result : %.py
 	PYTHONPATH=. $<

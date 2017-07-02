@@ -17,6 +17,7 @@
 import unittest
 from model.from_markdown import from_markdown
 
+
 class MarkdownTest(unittest.TestCase):
 
     def test_basic(self):

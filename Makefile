@@ -16,13 +16,19 @@ TESTS = distributions/test/distribution_test.py \
         distributions/test/operations_test.py \
         model/test/markdown_test.py
 
+PYS = $(shell git ls-tree -r HEAD . --name-only | grep py$$ )
+
 TEST_RESULTS = $(TESTS:.py=.result)
 
-all: test check_deps
+all: check_deps test pep8
 
 .PHONY: check_deps
 check_deps : python_requirements.txt
 	! (pip3 freeze | diff - $< | grep '^>')
+
+.PHONY: pep8
+pep8 : $(PYS)
+	pep8 $(PYS)
 
 %.result : %.py
 	PYTHONPATH=. $<

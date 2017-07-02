@@ -25,6 +25,7 @@ from model.from_markdown import from_markdown
 import report.structure_dump
 import report.display_cdf
 
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--levels', type=int,

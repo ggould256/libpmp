@@ -67,13 +67,13 @@ class NodeParser(CommonMark.render.renderer.Renderer):
     def paragraph(self, node, entering):
         # If the document starts with text, make top-level paragraphs all
         # sibling children of root.
-        if entering == True and self.current is self.root:
+        if entering is True and self.current is self.root:
             self._start_child(1)
 
         # Which text gets an enclosing para and which does not seems obscure,
         # so just treat para ends as node boundaries to be sure of not missing
         # estimates at ends of lines.
-        if entering == False and self.current.data:
+        if entering is False and self.current.data:
             self._start_sibling()
 
     def item(self, node, entering):

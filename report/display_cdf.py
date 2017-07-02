@@ -25,6 +25,7 @@ NUM_SAMPLES = 100
 """Number of interpolated values in plot."""
 GRAPH_RESOLUTION = 1000
 
+
 def bounds_for_plotting(dist):
     """Arbitrarily compute and return a (lower_bound, upper_bound) pair for
     the x axis of a plot of the given distribution."""
@@ -33,6 +34,7 @@ def bounds_for_plotting(dist):
     assert(high_x > low_x)
     margin = (high_x - low_x) / 10
     return (low_x - margin, high_x + margin)
+
 
 def report(node, args):
     pyplot.xkcd()

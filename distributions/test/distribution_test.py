@@ -88,8 +88,9 @@ class DistributionRulesTest(unittest.TestCase):
 
 fits_to_test = [[dut] for dut in ((8, 40), (20, 30), (100, 200))]
 
-"""Test curve fitting on some common 10-75 estimate pairs."""
+
 class FitTest(unittest.TestCase):
+    """Test curve fitting on some common 10-75 estimate pairs."""
 
     @parameterized.expand(fits_to_test)
     def test_fit(self, points):

@@ -23,11 +23,14 @@ import argparse
 from model.from_html import from_html
 from model.from_markdown import from_markdown
 import report.structure_dump
+import report.display_cdf
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--levels', type=int,
                         help='maximum levels to show', default=2)
+    parser.add_argument('--report', type=str, default="structure_dump",
+                        help='Report to run.')
     parser.add_argument('input')
 
     args = parser.parse_args()
@@ -38,8 +41,12 @@ def main():
     else:
         root = from_markdown(data)
 
-    report.structure_dump.report(root, args)
-
+    if args.report == 'structure_dump':
+        report.structure_dump.report(root, args)
+    elif args.report == 'display_cdf':
+        report.display_cdf.report(root, args)
+    else:
+        parser.error("Unrecognized report: %d" % args.report)
 
 if __name__ == '__main__':
     main()

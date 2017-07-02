@@ -12,14 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Node represents a point in an estimates tree.  It contains a number of
-child nodes and optionally a cost; the cost is a (resource, distribution)
-pair.
-
-The mapping of (resource, distribution) pairs to node costs is specified via
-a distribution config.
-"""
+"""The tree structure representing work to be estimated."""
 
 from collections import namedtuple
 
@@ -37,6 +30,22 @@ CostConfig = namedtuple(
 
 
 class Node(object):
+    """
+    Node represents a point in an estimates tree.  It contains a number of
+    child nodes and optionally a cost; the cost is a (resource, distribution)
+    pair.
+
+    The mapping of (resource, distribution) pairs to node costs is specified
+    via a distribution config.
+    """
+
+    # TODO(ggould) this class is a bit of a dumping ground; individual parsers
+    # should subclass it.
+    # pylint: disable = too-many-instance-attributes
+
+    # pylint is not smart enough to recognize private calls on the subtree:
+    # pylint: disable = protected-access
+
     def __init__(self):
         self.tag = ''
         self.c_class = 0
@@ -50,6 +59,7 @@ class Node(object):
         self.level = None  # Used by parsers to track header hierarchy.
 
     def is_root(self):
+        """True iff this is the root node."""
         return self.parent is None
 
     def check_valid(self):
@@ -61,10 +71,13 @@ class Node(object):
         # TODO(ggould) Check for additional validity constraints, if any.
 
     def format_distribution(self):
+        """Writes out a human-readable string describing the distribution
+        for this node."""
         if self.distribution is None:
             return ''
 
         def fmt(x):
+            """Format the given value for display."""
             if x is None:
                 return ''
             return '%.0f' % x
@@ -78,13 +91,14 @@ class Node(object):
         return self._cost_raw(config, final=True)
 
     def cost(self, config=None):
+        """Computes the cost of this node."""
         self.check_valid()
         return self._cost_raw(config, final=False)
 
     def _cost_raw(self, config, final):
         """Return the "cost" of this node, with resource costs defined by the
         given config.  If no config is given, all resources are treated as
-        cost 1."""
+        cost 1.  Memoizes (and uses memos) iff @p final is True."""
         if final:
             if config in self._memoized_cost:
                 return self._memoized_cost[config]
@@ -96,12 +110,12 @@ class Node(object):
                 cost_so_far = dist_scale(cost_so_far, multiplier)
             else:
                 cost_so_far = None
-        for c in self.children:
-            c_cost = c._cost_raw(config, final)
-            if cost_so_far is None or c_cost is None:
-                cost_so_far = cost_so_far or c_cost
+        for child in self.children:
+            child_cost = child._cost_raw(config, final)
+            if cost_so_far is None or child_cost is None:
+                cost_so_far = cost_so_far or child_cost
             else:
-                cost_so_far = dist_add(cost_so_far, c_cost)
+                cost_so_far = dist_add(cost_so_far, child_cost)
 
         result = cost_so_far or ZERO
         if final:
@@ -129,10 +143,14 @@ class Node(object):
 
 
 def fit_curve(value_10, value_75):
+    """Generates a log-logistic curve fit to the provided 10% and 75% quantile
+    values."""
     return LogLogistic.fit(0.1, value_10, 0.75, value_75)
 
 
 def make_distribution(data):
+    """Constructs the distribution corresponding to the estimate expression
+    string in @p data."""
     values = data[1:-1].split('-')
     if len(values) == 1:
         return PointDistribution({float(values[0]): 1.0})

@@ -19,10 +19,10 @@ from matplotlib import pyplot
 from numpy import linspace
 from scipy.interpolate import interp1d
 
-"""Number of samples from distribution to be plotted, pre-interpolation."""
+# Number of samples from distribution to be plotted, pre-interpolation.
 NUM_SAMPLES = 100
 
-"""Number of interpolated values in plot."""
+# Number of interpolated values in plot.
 GRAPH_RESOLUTION = 1000
 
 
@@ -31,12 +31,14 @@ def bounds_for_plotting(dist):
     the x axis of a plot of the given distribution."""
     low_x = dist.quantile(0.01)
     high_x = dist.quantile(0.99)
-    assert(high_x > low_x)
+    assert high_x > low_x
     margin = (high_x - low_x) / 10
     return (low_x - margin, high_x + margin)
 
 
-def report(node, args):
+def report(node, _):
+    """Generate and display the graph."""
+    # pylint: disable = invalid-name
     pyplot.xkcd()
     cost = node.final_cost()
     (x_min, x_max) = bounds_for_plotting(cost)

@@ -14,17 +14,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Unit tests for distribution subclasses."""
+
+# Tests can be sloppy about variable names; it's no big deal.
+# pylint: disable = invalid-name
+
+import math
+import unittest
+
+from parameterized import parameterized
+
 from distributions.log_logistic import LogLogistic
 from distributions.point_distribution import PointDistribution
 from distributions.uniform import UniformDistribution
 from distributions.numeric import NumericDistribution
 import distributions.operations as ops
 
-import math
-from parameterized import parameterized
-import unittest
 
-distributions_to_test = [[dut] for dut in (
+DISTRIBUTIONS_TO_TEST = [[dut] for dut in (
     LogLogistic(10, 0.5),
     LogLogistic(10, 1),
     LogLogistic(10, 2),
@@ -40,33 +47,39 @@ distributions_to_test = [[dut] for dut in (
 
 
 class DistributionRulesTest(unittest.TestCase):
+    """Test that various invariants hold over all of the distributions in
+    `DISTRIBUTIONS_TO_TEST`."""
 
-    @parameterized.expand(distributions_to_test)
+    @parameterized.expand(DISTRIBUTIONS_TO_TEST)
     def test_negative_t(self, dut):
+        """No probability density lies left of zero."""
         neg_inf = float("-inf")
         for t in [neg_inf, -10, -1, -0.1]:
             self.assertAlmostEqual(dut.pdf(t), 0)
         for t in [neg_inf, -10, -1, -0.1, 0]:
             self.assertAlmostEqual(dut.cdf(t), 0)
 
-    @parameterized.expand(distributions_to_test)
+    @parameterized.expand(DISTRIBUTIONS_TO_TEST)
     def test_large_t(self, dut):
+        """No probability density remains at infinity."""
         inf = float("inf")
         if not math.isnan(dut.pdf(inf)):
             self.assertEqual(dut.pdf(inf), 0)
         if not math.isnan(dut.cdf(inf)):
             self.assertEqual(dut.cdf(inf), 1)
 
-    @parameterized.expand(distributions_to_test)
+    @parameterized.expand(DISTRIBUTIONS_TO_TEST)
     def test_monotone(self, dut):
+        """The cumulative distribution function is monotone."""
         for test_point in range(1000):
             self.assertLessEqual(dut.cdf(test_point),
                                  dut.cdf(test_point + 0.001))
             self.assertLessEqual(dut.cdf(test_point),
                                  dut.cdf(test_point + 1))
 
-    @parameterized.expand(distributions_to_test)
+    @parameterized.expand(DISTRIBUTIONS_TO_TEST)
     def test_derivative(self, dut):
+        """The pdf is approximately the derivative of the cdf."""
         dt = 0.001
         for base_t in range(1000):
             t = base_t + 0.1  # avoid curve transients at 0
@@ -74,8 +87,9 @@ class DistributionRulesTest(unittest.TestCase):
             dp = dut.cdf(t + dt) - dut.cdf(t)
             self.assertAlmostEqual(dpdt, dp / dt, delta=0.001)
 
-    @parameterized.expand(distributions_to_test)
+    @parameterized.expand(DISTRIBUTIONS_TO_TEST)
     def test_quantile(self, dut):
+        """`quantile()` and `cdf()` are approximate inverses."""
         for p in [0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 0.99]:
             t = dut.quantile(p)
             approximated_p = dut.cdf(t)
@@ -86,16 +100,17 @@ class DistributionRulesTest(unittest.TestCase):
                                         (p, t)))
 
 
-fits_to_test = [[dut] for dut in ((8, 40), (20, 30), (100, 200))]
+FITS_TO_TEST = [[dut] for dut in ((8, 40), (20, 30), (100, 200))]
 
 
 class FitTest(unittest.TestCase):
     """Test curve fitting on some common 10-75 estimate pairs."""
 
-    @parameterized.expand(fits_to_test)
+    @parameterized.expand(FITS_TO_TEST)
     def test_fit(self, points):
+        """The result of `fit()` actually has the indicated quantiles."""
         (ten, seventyfive) = points
-        dist = LogLogistic.fit(0.1,  ten, 0.75, seventyfive)
+        dist = LogLogistic.fit(0.1, ten, 0.75, seventyfive)
         self.assertAlmostEqual(dist.quantile(0.1), ten, delta=1)
         self.assertAlmostEqual(dist.quantile(0.75), seventyfive, delta=1)
 

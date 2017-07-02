@@ -14,11 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for `from_markdown`."""
+
+# Tests can be sloppy about variable names; it's no big deal.
+# pylint: disable = invalid-name
+
 import unittest
 from model.from_markdown import from_markdown
 
 
 class MarkdownTest(unittest.TestCase):
+    """Tests markdown parsing for a variety of simple examples."""
 
     BASIC_MD = """\
 Heading

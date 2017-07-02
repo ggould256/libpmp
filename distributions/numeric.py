@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Discrete distribution used for nonparametric functions."""
+
 import math
 from distributions.distribution import Distribution
 
@@ -43,7 +45,7 @@ class NumericDistribution(Distribution):
             return self.BEFORE
         try:
             bucket = math.floor(x) - self._offset
-        except OverflowError as e:
+        except OverflowError as _:
             return self.AFTER
         if bucket >= len(self._values):
             return self.AFTER

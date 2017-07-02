@@ -20,7 +20,7 @@ PYS = $(shell git ls-tree -r HEAD . --name-only | grep py$$ )
 
 TEST_RESULTS = $(TESTS:.py=.result)
 
-all: check_deps test pep8
+all: check_deps test pep8 pylint
 
 .PHONY: check_deps
 check_deps : python_requirements.txt
@@ -29,6 +29,10 @@ check_deps : python_requirements.txt
 .PHONY: pep8
 pep8 : $(PYS)
 	pep8 $(PYS)
+
+.PHONY: pylint
+pylint : $(PYS)
+	pylint $(PYS)
 
 %.result : %.py
 	PYTHONPATH=. $<

@@ -17,7 +17,6 @@
 """Parse structure text files and emit various reports describing how
 much effort or cost would be involved."""
 
-
 import argparse
 
 from model.from_html import from_html
@@ -27,6 +26,8 @@ import report.display_cdf
 
 
 def main():
+    """Parse command line args, load estimates, and dispatch appropriate
+    report."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--levels', type=int,
                         help='maximum levels to show', default=2)

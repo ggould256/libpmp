@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Log-logistic distribution."""
+
+# "a" and "b" are the canonical names of the parameters of the distribution.
+# pylint: disable=invalid-name
+
 import scipy.optimize
 
 from distributions.distribution import Distribution
@@ -75,6 +80,8 @@ class LogLogistic(Distribution):
         start = [0.5 * (first_quantile_x + second_quantile_x), 1]
 
         def error(ab):
+            """Compute how far the quantiles of the log-logistic defined
+            by @p ab are from the requested quantiles."""
             a, b = ab
             return (
                 (_log_logistic_cdf(first_quantile_x, a, b) -
@@ -82,7 +89,10 @@ class LogLogistic(Distribution):
                 (_log_logistic_cdf(second_quantile_x, a, b) -
                  second_quantile_p) ** 2)
 
+        # pylint: disable = unused-variable
         def debug_log(ab):
+            """Print information about the progress of the solution, for
+            debugging solver issues."""
             a, b = ab
             dist = LogLogistic(a, b)
             print("Iterating: a =", a, " b =", b, " e =", error(ab))

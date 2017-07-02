@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import scipy.optimize
-
 """Abstract class for probability distributions of resources, along with some
 very basic utilities for manipulating them."""
+
+# This is an abstract base class; disable the corresponding pylint complaints.
+# pylint: disable = invalid-name, unused-argument, no-self-use
+
+import scipy.optimize
 
 
 class Distribution(object):
@@ -74,15 +77,20 @@ class Distribution(object):
 
 class _ZeroDistribution(Distribution):
 
-    def cdf(self, x): return 1
+    def cdf(self, _):
+        return 1
 
-    def pdf(self, x): return 0
+    def pdf(self, _):
+        return 0
 
-    def point_on_curve(self): return 0
+    def point_on_curve(self):
+        return 0
 
-    def quantile(self, p): return 0
+    def quantile(self, _):
+        return 0
 
-    def contains_point_masses(self): return True
+    def contains_point_masses(self):
+        return True
 
 
 ZERO = _ZeroDistribution()

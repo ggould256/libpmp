@@ -15,6 +15,8 @@
 """Parse structure text files and emit various reports describing how
 much effort or cost would be involved."""
 
+# TODO(ggould) This class needs some linter love.
+# pylint: disable = all
 
 import html.parser
 import re
@@ -30,7 +32,7 @@ def tag_depth(tag):
         return -1
     return TAG_NODES.index(tag)
 
-ESTIMATE_RE = re.compile('{[\d-]+}')
+ESTIMATE_RE = re.compile(r'{[\d-]+}')
 
 
 def get_c_class(attrs):

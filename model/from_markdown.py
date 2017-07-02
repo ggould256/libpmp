@@ -28,15 +28,16 @@ HEADING_SCALE = 10
 
 
 class NodeParser(CommonMark.render.renderer.Renderer):
-    # The NodeParser will be invoked by CommonMark on entrance and exit to
-    # various syntactic elements.  It is flatly syntactic -- entry and exit to
-    # headers *both* happen before any of the section text -- with the
-    # exception of item(), which is actually recursive.
-    #
-    # Thus the code below treats item entry and exit as simple tree traversal,
-    # while headers are handled quite differently (see header() for details).
+    """Take a parser stream from a markdown file of estimates and turn it into
+    a model for estimation.
+
+    This is a simple syntactic parse of everything except headers; headers
+    are treated as a hierarchy all their own, with increasing header numbers
+    descending and decreasing header numbers rolling back to the next lower
+    numbered header upstream."""
 
     def __init__(self):
+        """Construct the parser."""
         super(NodeParser, self).__init__()
         self.root = model.node.Node()
         self.root.tag = 'root'
@@ -45,6 +46,8 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         self.current = self.root
 
     def _start_child(self, level):
+        """Create new descendant node from the current node.  @p level is
+        the header level, if any, of this node."""
         new_node = model.node.Node()
         new_node.parent = self.current
         new_node.level = level
@@ -52,6 +55,7 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         self.current = new_node
 
     def _ascend(self):
+        """Pop back up one level in the parse tree."""
         assert self.current != self.root
         self.current = self.current.parent
 
@@ -61,7 +65,10 @@ class NodeParser(CommonMark.render.renderer.Renderer):
     # currently open structure; enters cause descent, texts cause children,
     # exits cause ascent.
 
+    # pylint: disable = unused-argument
     def text(self, node, entering=None):
+        """Create a text child of the current node, except in the special
+        cases of tocs (ignored) and headers (text added to header node)."""
         if "Table of Contents" in node.literal:
             # Special case to avoid double-counting hours in section
             # headers that are duplicated in the ToC.
@@ -75,14 +82,16 @@ class NodeParser(CommonMark.render.renderer.Renderer):
             self.current.data += node.literal.rstrip()
             self._ascend()
 
-    def paragraph(self, node, entering):
+    def paragraph(self, _, entering):
+        """Create a paragraph child of the current node."""
         if not entering:
             self._ascend()
             return
         self._start_child(None)
         self.current.parser_diag = "entering para"
 
-    def item(self, node, entering):
+    def item(self, _, entering):
+        """Create an item child of the current node."""
         if not entering:
             self._ascend()
             return
@@ -90,6 +99,8 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         self.current.parser_diag = "entering item"
 
     def heading(self, node, entering):
+        """Perform the complex header-processing dance; see implementation
+        for details."""
         # A heading node is a bit odd because heading structure is not
         # reflected in the event stream (the heading node exits immediately
         # at the end of the heading text) but must be in the resulting
@@ -104,6 +115,8 @@ class NodeParser(CommonMark.render.renderer.Renderer):
             return
 
         def fully_ascended():
+            """Return True if the heading under consideration should be a
+            child `self.current`."""
             if self.current.is_root():
                 return True
             elif self.current.tag == "heading":
@@ -135,30 +148,30 @@ def collapse_empty(subtree):
 
 
 def process_tree(parent_node):
+    """Build distributions for all of the nodes in the given subtree."""
     # Do all children first.
-
-    # TODO josh.pieper: It would be nice to report where in the tree
-    # errors occurred.
     for child in parent_node.children:
         process_tree(child)
 
     # Then look for a distribution in our data.
     possible_data = ESTIMATE_RE.findall(parent_node.data)
     if len(possible_data) > 1:
-        raise RuntimeError('multiple estimates found in one block')
+        raise RuntimeError('multiple estimates found in one block: ' +
+                           str(possible_data))
     elif len(possible_data) == 1:
         parent_node.distribution = model.node.make_distribution(
             possible_data[0])
 
 
 def from_markdown(markdown_text):
+    """Parse markdown text into a `model.Node` tree."""
     parser = CommonMark.blocks.Parser()
     ast = parser.parse(markdown_text)
 
-    np = NodeParser()
-    np.render(ast)
+    parser = NodeParser()
+    parser.render(ast)
 
-    model = np.root
-    collapse_empty(model)
-    process_tree(model)
-    return model
+    model_root = parser.root
+    collapse_empty(model_root)
+    process_tree(model_root)
+    return model_root

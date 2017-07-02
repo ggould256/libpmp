@@ -14,24 +14,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tests for operations module."""
+
+# Tests can be sloppy about variable names; it's no big deal.
+# pylint: disable = invalid-name
+
+import unittest
+
 from distributions.log_logistic import LogLogistic
-from distributions.point_distribution import PointDistribution
 import distributions.operations as op
 from distributions.uniform import UniformDistribution
 from distributions.numeric import NumericDistribution
 
-import unittest
-
 
 class DistributionRulesTest(unittest.TestCase):
+    """Test some simple invariants on some distributions."""
 
     def verify_dist_points(self, dist, pdf_points, cdf_points, offset=0):
+        """Test that a given distribution @p dist has the PDF and CDF
+        described by @p pdf_points, @p cdf_points at the specified
+        @p offset."""
         for i in range(len(pdf_points or [])):
             self.assertAlmostEqual(dist.pdf(offset + i), pdf_points[i])
         for i in range(len(cdf_points or [])):
             self.assertAlmostEqual(dist.cdf(offset + i), cdf_points[i])
 
     def test_add_uniform(self):
+        """Test that the sum of two uniform distributions is a triangle."""
         u1 = UniformDistribution(0, 1)
         u1twice = op.dist_add(u1, u1)
         self.assertEqual(type(u1twice), NumericDistribution)
@@ -46,6 +55,7 @@ class DistributionRulesTest(unittest.TestCase):
                                 offset=2)
 
     def test_scale(self):
+        """Test that scale does what it says."""
         base = LogLogistic(10, 2)
         scaled = op.dist_scale(base, 2)
         for i in range(2000):

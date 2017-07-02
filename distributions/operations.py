@@ -12,11 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
-
-from distributions.distribution import Distribution, ZERO
-from distributions.numeric import NumericDistribution
-
 """Operations on distributions.
 
 NOTE:  These are intentionally not implemented as operations on Distribution,
@@ -26,10 +21,16 @@ so not implementing operators here ensures errors if someone interchanges
 distribution and model objects.
 """
 
+import math
+
+from distributions.distribution import Distribution, ZERO
+from distributions.numeric import NumericDistribution
+
 
 _ADD_RESOLUTION = 100
 
 
+# pylint: disable = invalid-name, too-many-locals
 def dist_add(l, r, epsilon=0.01):
     """Returns the sum of random variables distributed by @p l and @p r.  The
     sum of random variables has a pdf that is the convolution of the pdfs of
@@ -81,6 +82,8 @@ def dist_scale(dist, scale):
         return ZERO
 
     class ScaleWrapper(Distribution):
+        """A distribution that scales another distribution along its x
+        axis."""
         def __init__(self, parent, _scale):
             self._parent = parent
             self._scale = _scale

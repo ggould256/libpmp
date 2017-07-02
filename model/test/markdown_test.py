@@ -20,17 +20,74 @@ from model.from_markdown import from_markdown
 
 class MarkdownTest(unittest.TestCase):
 
+    BASIC_MD = """\
+Heading
+ * bullet {8-40}
+"""
+
     def test_basic(self):
         """Smoke test of the first markdown file I made that gave a
         wrong parse."""
-        md = "Heading\n * item {8-40}"
-        model = from_markdown(md)
+        model = from_markdown(self.BASIC_MD)
         self.assertEqual(model.tag, "root")
         self.assertEqual(len(model.children), 2)
         self.assertEqual(model.children[0].data, "Heading")
+        self.assertEqual(model.children[1].data, "bullet {8-40}")
         cost = model.children[1].cost()
         self.assertAlmostEqual(cost.quantile(0.1), 8, delta=0.01)
         self.assertAlmostEqual(cost.quantile(0.75), 40, delta=0.01)
+
+    TEXT_AND_BULLETS_MD = """\
+Text
+ * bullet {8-40}
+ * bullet {8-40}
+"""
+
+    def test_text_and_bullets(self):
+        """Check the generated node structure from a bulleted list."""
+        model = from_markdown(self.TEXT_AND_BULLETS_MD)
+        self.assertEqual(model.tag, "root")
+        self.assertEqual(len(model.children), 3)
+        self.assertEqual(model.children[0].data, "Text")
+        self.assertEqual(model.children[1].data, "bullet {8-40}")
+        self.assertEqual(model.children[2].data, "bullet {8-40}")
+
+    COMPLEX_HEADERS_MD = """\
+H2 at top level
+---------------
+
+ * Node 1
+
+### H3
+
+ * Node 2
+
+H1
+==
+
+ * Node 3
+
+## H2 under H1
+
+ * Node 4
+
+## Second H2 under H1
+
+Third H2 under H1
+-----------------
+
+"""
+
+    def test_complex_headers(self):
+        """Check the generated node structure from a bulleted list."""
+        model = from_markdown(self.COMPLEX_HEADERS_MD)
+        model.pretty_print()
+        self.assertEqual(model.tag, "root")
+        self.assertEqual(len(model.children), 2)  # H2 at top and H1
+        h2 = model.children[0]
+        self.assertEqual(len(h2.children), 2)  # Node 1 and H3
+        h1 = model.children[1]
+        self.assertEqual(len(h1.children), 4)  # Node 3 and three H2s
 
 
 if __name__ == '__main__':

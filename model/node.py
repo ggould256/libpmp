@@ -46,6 +46,19 @@ class Node(object):
         self.resource = ""
         self.distribution = None
         self._memoized_cost = {}
+        self.parser_diag = None
+        self.level = None  # Used by parsers to track header hierarchy.
+
+    def is_root(self):
+        return self.parent is None
+
+    def check_valid(self):
+        """Checks structural validity of the node tree; asserts if the tree
+        is invalid."""
+        for child in self.children:
+            assert child.parent == self
+            child.check_valid()
+        # TODO(ggould) Check for additional validity constraints, if any.
 
     def format_distribution(self):
         if self.distribution is None:
@@ -61,9 +74,11 @@ class Node(object):
     def final_cost(self, config=None):
         """Like 'cost', but assumes that no changes can be made after a call,
         and thus memoizes the result."""
+        self.check_valid()
         return self._cost_raw(config, final=True)
 
     def cost(self, config=None):
+        self.check_valid()
         return self._cost_raw(config, final=False)
 
     def _cost_raw(self, config, final):
@@ -92,6 +107,25 @@ class Node(object):
         if final:
             self._memoized_cost[config] = result
         return result
+
+    def pretty_print(self, prefix=""):
+        """Print a human-readable view of this node.  Lines are prefixed with
+        the provided @p prefix, if any."""
+        self.check_valid()
+        node_str = prefix
+        node_str += ("* " if self.is_root()
+                     else "+ " if len(self.parent.children) > 1
+                     else "- ")
+        node_str += "{%s} " % self.tag
+        if self.parser_diag:
+            node_str += " [%s] " % self.parser_diag
+        data_len = 78 - len(node_str)
+        data_text = (self.data if len(self.data) <= data_len
+                     else (self.data[:(data_len - 3)] + "..."))
+        node_str += data_text
+        print(node_str)
+        for child in self.children:
+            child.pretty_print(prefix + "  ")
 
 
 def fit_curve(value_10, value_75):

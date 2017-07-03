@@ -21,8 +21,9 @@ import argparse
 
 from model.from_html import from_html
 from model.from_markdown import from_markdown
-import report.structure_dump
 import report.display_cdf
+import report.enhanced_html
+import report.structure_dump
 
 
 def main():
@@ -47,6 +48,9 @@ def main():
         report.structure_dump.report(root, args)
     elif args.report == 'display_cdf':
         report.display_cdf.report(root, args)
+    elif args.report == 'enhanced_html':
+        assert hasattr(root, "ast")  # Require the CommonMark AST.
+        report.enhanced_html.report(root, args)
     else:
         parser.error("Unrecognized report: %d" % args.report)
 

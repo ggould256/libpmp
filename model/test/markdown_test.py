@@ -87,7 +87,6 @@ Third H2 under H1
     def test_complex_headers(self):
         """Check the generated node structure from a bulleted list."""
         model = from_markdown(self.COMPLEX_HEADERS_MD)
-        model.pretty_print()
         self.assertEqual(model.tag, "root")
         self.assertEqual(len(model.children), 2)  # H2 at top and H1
         h2 = model.children[0]

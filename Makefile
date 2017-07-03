@@ -18,24 +18,57 @@ TESTS = distributions/test/distribution_test.py \
 
 PYS = $(shell git ls-tree -r HEAD . --name-only | grep py$$ )
 
-TEST_RESULTS = $(TESTS:.py=.result)
+SAMPLES = $(shell git ls-files -c samples/)
 
-all: check_deps test pep8 pylint
+RESULTSDIR = .results
 
+DEPSFILE = python_requirements.txt
+
+
+all: check_deps test pep8 nocrash pylint
+clean:
+	rm -rf $(RESULTSDIR)
+
+
+# Test to verify that all declared dependencies are present, as version
+# shear can cause seriously hard-to-debug failures.
 .PHONY: check_deps
-check_deps : python_requirements.txt
+check_deps : $(DEPSFILE)
 	! (pip3 freeze | diff - $< | grep '^>')
 
+
+# Linter rule for pep8
 .PHONY: pep8
 pep8 : $(PYS)
 	pep8 $(PYS)
 
+# Linter rule for pylint
 .PHONY: pylint
 pylint : $(PYS)
 	pylint $(PYS)
 
-%.result : %.py
-	PYTHONPATH=. $<
+
+# Run all declared unit tests.
+TEST_RESULTS = $(patsubst %,$(RESULTSDIR)/%.out,$(TESTS))
 
 .PHONY: test
 test: $(TEST_RESULTS)
+$(RESULTSDIR)/%.out : % $(PYS) $(DEPSFILE)
+	mkdir -p $(dir $@)
+	PYTHONPATH=. $< > $@
+
+
+# For each sample file, verify that cost.py does not crash when running it.
+SAMPLE_NOCRASHES_HTML = $(patsubst %,$(RESULTSDIR)/%.html,$(SAMPLES))
+SAMPLE_NOCRASHES_TXT = $(patsubst %,$(RESULTSDIR)/%.txt,$(SAMPLES))
+
+.PHONY: nocrash
+nocrash: $(SAMPLE_NOCRASHES_HTML) $(SAMPLE_NOCRASHES_TXT)
+$(RESULTSDIR)/%.html : % $(PYS) $(DEPSFILE)
+	mkdir -p $(dir $@)
+	./cost.py --report=enhanced_html $< > $@
+$(RESULTSDIR)/%.txt : % $(PYS) $(DEPSFILE)
+	mkdir -p $(dir $@)
+	./cost.py --report=structure_dump $< > $@
+
+# display_cdf sometimes requires user intervention, so don't run it.

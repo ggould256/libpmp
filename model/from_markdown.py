@@ -27,6 +27,17 @@ ESTIMATE_RE = re.compile('{.*}$')
 HEADING_SCALE = 10
 
 
+class MarkdownNode(model.node.Node):
+    """Markdown subclass of Node that retains header structure and crosslinks
+    to the markdown AST."""
+
+    def __init__(self):
+        """Construct a markdown-flavored Node."""
+        super().__init__()
+        self.level = None  # For header nodes, the header level.
+        self.ast = None  # Markdown AST node corresponding to this.
+
+
 class NodeParser(CommonMark.render.renderer.Renderer):
     """Take a parser stream from a markdown file of estimates and turn it into
     a model for estimation.
@@ -39,18 +50,19 @@ class NodeParser(CommonMark.render.renderer.Renderer):
     def __init__(self):
         """Construct the parser."""
         super(NodeParser, self).__init__()
-        self.root = model.node.Node()
+        self.root = MarkdownNode()
         self.root.tag = 'root'
         self.root.level = 0
         self.parser_diag = "__init__"
         self.current = self.root
 
-    def _start_child(self, level):
+    def _start_child(self, level, ast):
         """Create new descendant node from the current node.  @p level is
         the header level, if any, of this node."""
-        new_node = model.node.Node()
+        new_node = MarkdownNode()
         new_node.parent = self.current
         new_node.level = level
+        new_node.ast = ast
         self.current.children.append(new_node)
         self.current = new_node
 
@@ -65,6 +77,10 @@ class NodeParser(CommonMark.render.renderer.Renderer):
     # currently open structure; enters cause descent, texts cause children,
     # exits cause ascent.
 
+    def document(self, node, _):
+        """Make sure our model's root references the AST root."""
+        self.root.ast = node
+
     # pylint: disable = unused-argument
     def text(self, node, entering=None):
         """Create a text child of the current node, except in the special
@@ -77,25 +93,25 @@ class NodeParser(CommonMark.render.renderer.Renderer):
             self.current.parser_diag = "heading text"
             self.current.data += node.literal.rstrip()
         else:
-            self._start_child(None)
+            self._start_child(None, node)
             self.current.parser_diag = "text"
             self.current.data += node.literal.rstrip()
             self._ascend()
 
-    def paragraph(self, _, entering):
+    def paragraph(self, node, entering):
         """Create a paragraph child of the current node."""
         if not entering:
             self._ascend()
             return
-        self._start_child(None)
+        self._start_child(None, node)
         self.current.parser_diag = "entering para"
 
-    def item(self, _, entering):
+    def item(self, node, entering):
         """Create an item child of the current node."""
         if not entering:
             self._ascend()
             return
-        self._start_child(None)
+        self._start_child(None, node)
         self.current.parser_diag = "entering item"
 
     def heading(self, node, entering):
@@ -111,7 +127,7 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         # a stronger heading.  We then create a new child and put the heading
         # text into it.
         if not entering:
-            self._start_child(node.level)
+            self._start_child(node.level, node)
             return
 
         def fully_ascended():
@@ -127,7 +143,7 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         while not fully_ascended():
             self._ascend()
 
-        self._start_child(node.level)
+        self._start_child(node.level, node)
         self.current.tag = "heading"
         self.current.parser_diag = "Heading level %d" % node.level
 

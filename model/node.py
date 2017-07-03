@@ -56,7 +56,6 @@ class Node(object):
         self.distribution = None
         self._memoized_cost = {}
         self.parser_diag = None
-        self.level = None  # Used by parsers to track header hierarchy.
 
     def is_root(self):
         """True iff this is the root node."""

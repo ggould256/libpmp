@@ -25,6 +25,7 @@ RESULTSDIR = .results
 DEPSFILE = python_requirements.txt
 
 
+.DELETE_ON_ERROR:
 all: check_deps test pep8 nocrash pylint
 clean:
 	rm -rf $(RESULTSDIR)

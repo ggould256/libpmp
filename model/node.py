@@ -83,6 +83,13 @@ class Node(object):
         return '(%s,%s,%s)' % tuple(fmt(self.distribution.quantile(p))
                                     for p in [0.1, 0.5, 0.9])
 
+    def has_cost(self):
+        """Return True iff this node has any cost."""
+        self.check_valid()
+        if self.distribution is not None:
+            return True
+        return any(child.has_cost() for child in self.children)
+
     def final_cost(self, config=None):
         """Like 'cost', but assumes that no changes can be made after a call,
         and thus memoizes the result."""

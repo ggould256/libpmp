@@ -19,27 +19,54 @@ relies on abusing the CommonMark renderer to generate the HTML."""
 
 import CommonMark
 
+from model.node_plot import cdf_plot_svg
 
-def annotate_asts(subtree):
+HEADER = """
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<html>
+"""
+
+FOOTER = """
+</body>
+</html>
+"""
+
+
+def distribution_text(node, args):
+    """Generates HTML text to be inserted after the header block for
+    the provided header @p node."""
+    distribution = node.final_cost()
+    svg = cdf_plot_svg(node, args)
+    html = (
+        '<div align="right" float="right">' +
+        " : ".join("%d" % round(distribution.quantile(q / 100))
+                   for q in (10, 25, 50, 75, 90)) +
+        svg +
+        "</div>")
+    return html
+
+
+def annotate_asts(subtree, args):
     """For the given MarkdownNode tree, annotate the associated AST with
     estimates information."""
     md_ast = subtree.ast
-    if md_ast.t == "heading":
-        distribution = subtree.final_cost()
-        distribution_text = (
-            '<div align="right">' +
-            " : ".join("%d" % round(distribution.quantile(q / 100))
-                       for q in (10, 25, 50, 75, 90)) +
-            "</div>")
+    if md_ast.t == "heading" and subtree.has_cost():
         dist_ast_node = CommonMark.node.Node("html_block", [])
-        dist_ast_node.literal = distribution_text
+        dist_ast_node.literal = distribution_text(subtree, args)
         md_ast.insert_after(dist_ast_node)
     for child in subtree.children:
-        annotate_asts(child)
+        annotate_asts(child, args)
+
 
 def report(root, args):
     """Renders out the whole node @p root with its estimates as HTML."""
     renderer = CommonMark.HtmlRenderer()
-    annotate_asts(root)
+    annotate_asts(root, args)
     html = renderer.render(root.ast)
+    print(HEADER)
     print(html)
+    print(FOOTER)

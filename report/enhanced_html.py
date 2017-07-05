@@ -19,7 +19,7 @@ relies on abusing the CommonMark renderer to generate the HTML."""
 
 import CommonMark
 
-from model.node_plot import cdf_svg
+from model import node_plot
 
 HEADER = """
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -40,7 +40,7 @@ def distribution_text(node, args):
     """Generates HTML text to be inserted after the header block for
     the provided header @p node."""
     distribution = node.final_cost()
-    svg = cdf_svg(node, args)
+    svg = node_plot.cdf_svg(node, args, multi=True)
     html = (
         '<div align="right" float="right">' +
         " : ".join("%d" % round(distribution.quantile(q / 100))

@@ -28,5 +28,5 @@ GRAPH_RESOLUTION = 1000
 
 def report(node, args):
     """Generate and display the graph."""
-    node_plot.cdf_prep(node, args)
+    node_plot.multi_cdf_prep(node, args)
     pyplot.show()

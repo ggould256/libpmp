@@ -20,6 +20,9 @@ from matplotlib import pyplot as plt
 from numpy import linspace
 from scipy.interpolate import interp1d
 
+from distributions import distribution
+from distributions.operations import dist_add
+
 # Number of samples from distribution to be plotted, pre-interpolation.
 NUM_SAMPLES = 100
 
@@ -30,11 +33,9 @@ GRAPH_RESOLUTION = 1000
 def bounds_for_plotting(dist):
     """Arbitrarily compute and return a (lower_bound, upper_bound) pair for
     the x axis of a plot of the given distribution."""
-    low_x = dist.quantile(0.01)
-    high_x = dist.quantile(0.99)
-    assert high_x > low_x
-    margin = (high_x - low_x) / 10
-    return (low_x - margin, high_x + margin)
+    high_x = dist.quantile(0.95)
+    margin = high_x / 10
+    return 0, high_x + margin
 
 
 def cdf_prep(node, _):
@@ -50,10 +51,51 @@ def cdf_prep(node, _):
     plt.plot(xs_dense, cubic_y(xs_dense), '-')
 
 
-def cdf_svg(node, args):
+def cdf_svg(node, args, multi=False):
     """Obtain a byte array representing an svg plot of the CDF of @p node."""
     plt.clf()
-    cdf_prep(node, args)
+    if multi:
+        multi_cdf_prep(node, args)
+    else:
+        cdf_prep(node, args)
     figure_bytes = BytesIO()
     plt.savefig(figure_bytes, format="svg")
     return figure_bytes.getvalue().decode("utf-8")
+
+
+def multi_cdf_prep(node, _):
+    """Plot the CDF of @p node, with subdivisions representing the sequence of
+    child nodes."""
+    # pylint: disable = invalid-name, too-many-locals
+    plt.xkcd()
+    axes = plt.axes()
+    colors = ["red", "blue", "black"]
+    hatches = ["/", "\\", "o", "-"]
+
+    total_cost = node.final_cost()
+    cost_so_far = distribution.ZERO
+    (x_min, x_max) = bounds_for_plotting(total_cost)
+    xs = linspace(x_min, x_max, NUM_SAMPLES, endpoint=True)
+    xs_dense = linspace(x_min, x_max, GRAPH_RESOLUTION, endpoint=True)
+    curves = []
+    nodes_to_plot = [child for child in node.children if child.has_cost()]
+    for to_plot in nodes_to_plot:
+        cost_so_far = dist_add(cost_so_far, to_plot.final_cost())
+        curves.append(([cost_so_far.cdf(x) for x in xs],
+                       to_plot.data[:20]))
+    if node.distribution:
+        # Direct cost in a node with costly children: Odd but not prohibited.
+        curves.append((total_cost, node.data[:20]))
+    legend = []
+    prior_ys = 1.0
+    for (ys, name) in curves:
+        cubic_y = interp1d(xs, ys, kind="cubic")
+        axes.plot(xs_dense, cubic_y(xs_dense), '-', color=colors[0])
+        axes.fill_between(xs, prior_ys, ys,
+                          hatch=hatches[0],
+                          edgecolor=colors[0], facecolor="white")
+        legend.append(name)
+        colors = colors[1:] + colors[0:1]
+        hatches = hatches[1:] + hatches[0:1]
+        prior_ys = ys
+    axes.legend(legend)

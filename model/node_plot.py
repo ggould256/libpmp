@@ -65,7 +65,14 @@ def cdf_svg(node, args, multi=False):
 
 def multi_cdf_prep(node, _):
     """Plot the CDF of @p node, with subdivisions representing the sequence of
-    child nodes."""
+    child nodes.
+
+    NOTE: The subdivision plots, though pretty, are not mathematically
+    well-founded: Later plots gain more central-limit-theorem love than
+    earlier ones, and so the overall node variance will appear to be
+    overattributed to the earlier subtasks and underattributed to the later
+    ones.
+    """
     # pylint: disable = invalid-name, too-many-locals
     plt.xkcd()
     axes = plt.axes()

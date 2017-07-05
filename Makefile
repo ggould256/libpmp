@@ -35,7 +35,7 @@ clean:
 # shear can cause seriously hard-to-debug failures.
 .PHONY: check_deps
 check_deps : $(DEPSFILE)
-	! (pip3 freeze | diff - $< | grep '^>')
+	! (pip3 freeze | LC_COLLATE=C sort | diff - $< | grep '^>')
 
 
 # Linter rule for pep8

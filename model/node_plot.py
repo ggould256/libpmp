@@ -37,10 +37,9 @@ def bounds_for_plotting(dist):
     return (low_x - margin, high_x + margin)
 
 
-def cdf_plot_svg(node, _):
-    """Generate and display the graph."""
+def cdf_prep(node, _):
+    """Write a graph of the cdf of @p node to the current pyplot."""
     # pylint: disable = invalid-name
-    plt.clf()
     plt.xkcd()
     cost = node.final_cost()
     (x_min, x_max) = bounds_for_plotting(cost)
@@ -49,6 +48,12 @@ def cdf_plot_svg(node, _):
     cubic_y = interp1d(xs, ys, kind="cubic")
     xs_dense = linspace(x_min, x_max, GRAPH_RESOLUTION, endpoint=True)
     plt.plot(xs_dense, cubic_y(xs_dense), '-')
+
+
+def cdf_svg(node, args):
+    """Obtain a byte array representing an svg plot of the CDF of @p node."""
+    plt.clf()
+    cdf_prep(node, args)
     figure_bytes = BytesIO()
     plt.savefig(figure_bytes, format="svg")
     return figure_bytes.getvalue().decode("utf-8")

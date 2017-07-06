@@ -76,10 +76,15 @@ def multi_cdf_prep(node, _):
     # pylint: disable = invalid-name, too-many-locals
     plt.xkcd()
     axes = plt.axes()
+    axes.set_xlabel("Cost of \"" + node.data[:20] + "\"")
+    axes.set_ylabel("Likelihood")
     colors = ["red", "blue", "black"]
     hatches = ["/", "\\", "o", "-"]
 
     total_cost = node.final_cost()
+    axes.set_title(" : ".join("%d" % round(node.final_cost().quantile(q / 100))
+                              for q in (10, 25, 50, 75, 90)))
+
     cost_so_far = distribution.ZERO
     (x_min, x_max) = bounds_for_plotting(total_cost)
     xs = linspace(x_min, x_max, NUM_SAMPLES, endpoint=True)

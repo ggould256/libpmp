@@ -27,6 +27,12 @@ HEADER = """
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style>
+.floating-box {
+    align: right;
+    float: right;
+}
+</style>
 <html>
 """
 
@@ -39,12 +45,9 @@ FOOTER = """
 def distribution_text(node, args):
     """Generates HTML text to be inserted after the header block for
     the provided header @p node."""
-    distribution = node.final_cost()
     svg = node_plot.cdf_svg(node, args, multi=True)
     html = (
-        '<div align="right" float="right">' +
-        " : ".join("%d" % round(distribution.quantile(q / 100))
-                   for q in (10, 25, 50, 75, 90)) +
+        '<div class="floating-box">' +
         svg +
         "</div>")
     return html

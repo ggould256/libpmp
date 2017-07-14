@@ -62,6 +62,14 @@ class DistributionRulesTest(unittest.TestCase):
             self.assertEqual(base.pdf(i / 100.), scaled.pdf(i / 50.) * 2)
             self.assertEqual(base.cdf(i / 100.), scaled.cdf(i / 50.))
 
+    def test_truncate(self):
+        """Test that truncate does what it says."""
+        base = UniformDistribution(1, 5)
+        truncated = op.dist_truncate(base, 3)
+        self.verify_dist_points(truncated,
+                                [0, 0.25, 0.25, float("inf"), 0, 0],
+                                [0, 0, 0.25, 1., 1., 1.])
+
 
 if __name__ == "__main__":
     unittest.main()

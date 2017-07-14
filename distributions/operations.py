@@ -104,3 +104,41 @@ def dist_scale(dist, scale):
             return self._parent.contains_point_masses()
 
     return ScaleWrapper(dist, scale)
+
+
+def dist_truncate(dist, max_value):
+    """Return a distribution that is truncated (ie, right tail rolled up) to
+    not exceed @p max_value.  This is used to model, eg, a "timeboxed" task
+    that will be abandoned if it exceeds some maximum resource level."""
+
+    assert max_value >= 0
+    if max_value == 0:
+        return ZERO
+
+    class TruncateWrapper(Distribution):
+        """A distribution that truncates another distribution at a specified
+        maximum value."""
+        def __init__(self, parent, _max_value):
+            self._parent = parent
+            self._max_value = _max_value
+            self._probability_of_success = self._parent.cdf(self._max_value)
+
+        def cdf(self, x):
+            return 1. if x >= self._max_value else self._parent.cdf(x)
+
+        def pdf(self, x):
+            return (0. if x > self._max_value else
+                    float("inf") if x == self._max_value else
+                    self._parent.pdf(x))
+
+        def point_on_curve(self):
+            return self._parent.point_on_curve()
+
+        def quantile(self, p):
+            return (self._max_value if p >= self._probability_of_success
+                    else self._parent.quantile(p))
+
+        def contains_point_masses(self):
+            return True
+
+    return TruncateWrapper(dist, max_value)

@@ -43,7 +43,10 @@ DISTRIBUTIONS_TO_TEST = [[dut] for dut in (
     ops.dist_add(UniformDistribution(0, 1), UniformDistribution(0, 1)),
     ops.dist_add(LogLogistic.fit(0.1, 10, 0.75, 100),
                  LogLogistic.fit(0.1, 20, 0.75, 30)),
-    )]
+    ops.dist_truncate(UniformDistribution(0, 1), 0.2),
+    ops.dist_truncate(UniformDistribution(1, 5), 3),
+    ops.dist_truncate(LogLogistic.fit(0.1, 10, 0.75, 100), 50),
+)]
 
 
 class DistributionRulesTest(unittest.TestCase):

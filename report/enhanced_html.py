@@ -27,6 +27,35 @@ HEADER = """
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style>
+
+body {
+    margin: 0 2em;
+}
+
+.floating-box {
+    float: left;
+    margin-bottom: 1em;
+}
+
+h2 {
+    background-color: #666;
+    color: white;
+    padding: 0.5em 2.25em;
+    margin: 0em -2.25em 1em -2.25em;
+}
+
+h3 {
+    border-top: 2px solid #ccc;
+    width: 100%;
+    padding: 0.25em 2.25em;
+    margin: 0.5em -2.25em;
+    clear: both;
+}
+p {
+    clear:both;
+}
+</style>
 <html>
 """
 

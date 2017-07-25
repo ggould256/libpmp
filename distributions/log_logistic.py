@@ -70,11 +70,11 @@ class LogLogistic(Distribution):
         """Fit a log-logistic curve to the given fractions.  For instance if
         you want a curve with 8 as its 10th percentile and 40 as its 75th
         percentile, you would call fit(0.1, 8, 0.75, 40)."""
-        assert (0 < first_quantile_p < second_quantile_p < 1), (
-            "Quantile fractions out of order: 0 < %f < %f < 1" %
+        assert (0 <= first_quantile_p < second_quantile_p < 1), (
+            "Quantile fractions out of order: 0 <= %f < %f < 1" %
             (first_quantile_p, second_quantile_p))
-        assert (0 < first_quantile_x < second_quantile_x), (
-            "Quantile positions out of order: 0 < %f < %f" %
+        assert (0 <= first_quantile_x < second_quantile_x), (
+            "Quantile positions out of order: 0 <= %f < %f" %
             (first_quantile_x, second_quantile_x))
 
         start = [0.5 * (first_quantile_x + second_quantile_x), 1]

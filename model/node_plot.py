@@ -94,10 +94,10 @@ def multi_cdf_prep(node, _):
     for to_plot in nodes_to_plot:
         cost_so_far = dist_add(cost_so_far, to_plot.final_cost())
         curves.append(([cost_so_far.cdf(x) for x in xs],
-                       to_plot.data[:20]))
+                       to_plot.get_display_name()[:20]))
     if node.distribution:
         # Direct cost in a node with costly children: Odd but not prohibited.
-        curves.append((total_cost, node.data[:20]))
+        curves.append((total_cost, node.get_display_name()[:20]))
     legend = []
     prior_ys = 1.0
     for (ys, name) in curves:

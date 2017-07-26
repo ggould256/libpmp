@@ -36,6 +36,7 @@ class MarkdownNode(model.node.Node):
         super().__init__()
         self.level = None  # For header nodes, the header level.
         self.ast = None  # Markdown AST node corresponding to this.
+        self.display_name = ""
 
 
 class NodeParser(CommonMark.render.renderer.Renderer):
@@ -51,6 +52,7 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         """Construct the parser."""
         super(NodeParser, self).__init__()
         self.root = MarkdownNode()
+        self.root.display_name = "Whole Project"
         self.root.tag = 'root'
         self.root.level = 0
         self.parser_diag = "__init__"
@@ -177,6 +179,7 @@ def process_tree(parent_node):
     elif len(possible_data) == 1:
         parent_node.distribution = model.node.make_distribution(
             possible_data[0])
+        parent_node.display_name = ESTIMATE_RE.split(parent_node.data)[0]
 
 
 def from_markdown(markdown_text):

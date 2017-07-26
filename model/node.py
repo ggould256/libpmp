@@ -52,10 +52,15 @@ class Node(object):
         self.parent = None
         self.children = []
         self.data = ''
+        self.display_name = None
         self.resource = ""
         self.distribution = None
         self._memoized_cost = {}
         self.parser_diag = None
+
+    def get_display_name(self):
+        """Get a reasonable string to describe this node."""
+        return self.display_name or self.data
 
     def is_root(self):
         """True iff this is the root node."""

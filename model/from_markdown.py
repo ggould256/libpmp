@@ -91,14 +91,12 @@ class NodeParser(CommonMark.render.renderer.Renderer):
             # Special case to avoid double-counting hours in section
             # headers that are duplicated in the ToC.
             return
-        if self.current.tag == "heading":
-            self.current.parser_diag = "heading text"
-            self.current.data += node.literal.rstrip()
-        else:
-            self._start_child(None, node)
-            self.current.parser_diag = "text"
-            self.current.data += node.literal.rstrip()
-            self._ascend()
+        parent_tag = self.current.tag
+        self._start_child(None, node)
+        self.current.tag = "text"
+        self.current.parser_diag = "text following " + parent_tag
+        self.current.data += node.literal.rstrip()
+        self._ascend()
 
     def paragraph(self, node, entering):
         """Create a paragraph child of the current node."""
@@ -106,6 +104,7 @@ class NodeParser(CommonMark.render.renderer.Renderer):
             self._ascend()
             return
         self._start_child(None, node)
+        self.current.tag = "para"
         self.current.parser_diag = "entering para"
 
     def item(self, node, entering):
@@ -114,6 +113,7 @@ class NodeParser(CommonMark.render.renderer.Renderer):
             self._ascend()
             return
         self._start_child(None, node)
+        self.current.tag = "item"
         self.current.parser_diag = "entering item"
 
     def heading(self, node, entering):
@@ -129,7 +129,6 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         # a stronger heading.  We then create a new child and put the heading
         # text into it.
         if not entering:
-            self._start_child(node.level, node)
             return
 
         def fully_ascended():
@@ -153,16 +152,24 @@ class NodeParser(CommonMark.render.renderer.Renderer):
 def collapse_empty(subtree):
     """There a whole lot of places in markdown that *could* have text but
     don't.  This results in a very sparse model with a whole lot of empty
-    nodes.  This method recursively collapses those nodes.  Returns False
-    if the entire subtree passed in is empty."""
+    nodes.  This method recursively collapses those nodes."""
+    # Recursively simplify the child subtrees.
     for child in subtree.children:
         collapse_empty(child)
+    # Eliminate any vacuous children.
     subtree.children = [child for child in subtree.children
                         if child.data or child.children]
-    for (i, child) in enumerate(subtree.children):
-        if not child.data and len(child.children) == 1:
-            subtree.children[i] = child.children[0]
-            subtree.children[i].parent = subtree
+    # Adopt text children if we have no text, but not at root.
+    if not subtree.is_root():
+        if not subtree.data:
+            subtree.data = ''
+            while subtree.children and subtree.children[0].tag == "text":
+                subtree.data += subtree.children[0].data
+                subtree.children = subtree.children[1:]
+        if (not subtree.data and subtree.children and
+                subtree.children[0].tag == "para"):
+            subtree.data += subtree.children[0].data
+            subtree.children = subtree.children[1:]
 
 
 def process_tree(parent_node):

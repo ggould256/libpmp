@@ -24,6 +24,7 @@ from model.from_markdown import from_markdown
 import report.display_cdf
 import report.enhanced_html
 import report.structure_dump
+import report.parser_debug
 
 
 def main():
@@ -48,6 +49,8 @@ def main():
         report.structure_dump.report(root, args)
     elif args.report == 'display_cdf':
         report.display_cdf.report(root, args)
+    elif args.report == 'parser_debug':
+        report.parser_debug.report(root, args)
     elif args.report == 'enhanced_html':
         assert hasattr(root, "ast")  # Require the CommonMark AST.
         report.enhanced_html.report(root, args)

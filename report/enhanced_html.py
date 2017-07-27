@@ -38,9 +38,23 @@ body {
     margin-bottom: 1em;
 }
 
-h2 {
+h1, h2, h3, h4, h5, h6, p, ul, ol {
+    clear: both;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    width: 100%;
+}
+
+h1 {
     background-color: #666;
     color: white;
+    padding: 0.5em 2.25em;
+    margin: 0em -2.25em 1em -2.25em;
+}
+
+h2 {
+    background-color: #ccc;
     padding: 0.5em 2.25em;
     margin: 0em -2.25em 1em -2.25em;
 }
@@ -50,10 +64,6 @@ h3 {
     width: 100%;
     padding: 0.25em 2.25em;
     margin: 0.5em -2.25em;
-    clear: both;
-}
-p {
-    clear:both;
 }
 </style>
 <html>

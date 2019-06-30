@@ -29,7 +29,7 @@ CostConfig = namedtuple(
     ])
 
 
-class Node(object):
+class Node:
     """
     Node represents a point in an estimates tree.  It contains a number of
     child nodes and optionally a cost; the cost is a (resource, distribution)

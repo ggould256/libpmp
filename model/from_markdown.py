@@ -183,7 +183,7 @@ def process_tree(parent_node):
     if len(possible_data) > 1:
         raise RuntimeError('multiple estimates found in one block: ' +
                            str(possible_data))
-    elif len(possible_data) == 1:
+    if len(possible_data) == 1:
         parent_node.distribution = model.node.make_distribution(
             possible_data[0])
         parent_node.display_name = ESTIMATE_RE.split(parent_node.data)[0]

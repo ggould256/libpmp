@@ -21,7 +21,7 @@ very basic utilities for manipulating them."""
 import scipy.optimize
 
 
-class Distribution(object):
+class Distribution:
     """Abstract class representing a random variable of some resource."""
 
     def cdf(self, x):

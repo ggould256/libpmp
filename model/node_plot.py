@@ -15,6 +15,7 @@
 """Methods to generate plots from node distributions."""
 
 from io import BytesIO
+from operator import itemgetter
 
 from matplotlib import pyplot as plt
 from numpy import linspace
@@ -89,30 +90,46 @@ def multi_cdf_prep(node, _):
     cost_so_far = distribution.ZERO
     (x_min, x_max) = bounds_for_plotting(total_cost)
     xs = linspace(x_min, x_max, NUM_SAMPLES, endpoint=True)
-    xs_dense = linspace(x_min, x_max, GRAPH_RESOLUTION, endpoint=True)
-    curves = []  # List of (ys, name) for the curves, from left to right.
+    curves = []  # List of maps with params for the curves, from left to right.
     nodes_to_plot = [child for child in node.children if child.has_cost()]
     for to_plot in nodes_to_plot:
         cost_so_far = dist_add(cost_so_far, to_plot.final_cost())
-        curves.append(([cost_so_far.cdf(x) for x in xs],
-                       text.pretty_truncate(to_plot.get_display_name(), 20)))
+        # Precompute the distribution to avoid having to cache it.
+        ys = [cost_so_far.cdf(x) for x in xs]
+        precomputed_cdf = interp1d(xs, ys, kind="cubic")
+        curves.append({"y": precomputed_cdf,
+                       "x_min": max(x_min, cost_so_far.quantile(0.001)),
+                       "x_max": min(x_max, cost_so_far.quantile(0.999)),
+                       "label": to_plot.get_display_name()})
     if node.distribution:
         # Direct cost in a node with costly children: Odd but not prohibited.
-        curves.append((total_cost,
-                       text.pretty_truncate(node.get_display_name(), 20)))
+        curves.append({"y": total_cost, "x_min": x_min, "x_max": x_max,
+                       "label": node.get_display_name()})
+
     legend = []
-    prior_ys = 1.0
+    prior_curve = {"x_min": x_min, "x_max": x_max, "y": lambda _: 1.0}
     do_legend = len(curves) > 1
-    for (ys, name) in curves:
-        cubic_y = interp1d(xs, ys, kind="cubic")
-        axes.plot(xs_dense, cubic_y(xs_dense), '-', color=colors[0])
-        axes.fill_between(xs, prior_ys, ys,
+    for curve_desc in curves:
+        y, x_min, x_max = itemgetter("y", "x_min", "x_max")(curve_desc)
+        if do_legend:
+            legend.append(text.pretty_truncate(curve_desc["label"], 20))
+
+        # Make a smooth plot of the interpolated line.
+        xs_dense = linspace(x_min, x_max, GRAPH_RESOLUTION, endpoint=True)
+        axes.plot(xs_dense, [y(x) for x in xs_dense], '-', color=colors[0])
+
+        # Roughly fill in the space to the prior curve.
+        xs_sparse = linspace(prior_curve["x_min"], x_max, NUM_SAMPLES,
+                             endpoint=True)
+        axes.fill_between(xs_sparse,
+                          [prior_curve["y"](x) for x in xs_sparse],
+                          [y(x) for x in xs_sparse],
                           hatch=hatches[0],
                           edgecolor=colors[0], facecolor="white")
-        if do_legend:
-            legend.append(name)
+
+        # Rotate state for the next plot.
         colors = colors[1:] + colors[0:1]
         hatches = hatches[1:] + hatches[0:1]
-        prior_ys = ys
+        prior_curve = curve_desc
     if do_legend:
         axes.legend(legend)

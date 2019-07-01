@@ -90,7 +90,7 @@ def multi_cdf_prep(node, _):
     (x_min, x_max) = bounds_for_plotting(total_cost)
     xs = linspace(x_min, x_max, NUM_SAMPLES, endpoint=True)
     xs_dense = linspace(x_min, x_max, GRAPH_RESOLUTION, endpoint=True)
-    curves = []
+    curves = []  # List of (ys, name) for the curves, from left to right.
     nodes_to_plot = [child for child in node.children if child.has_cost()]
     for to_plot in nodes_to_plot:
         cost_so_far = dist_add(cost_so_far, to_plot.final_cost())

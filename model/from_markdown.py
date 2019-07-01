@@ -161,15 +161,16 @@ def collapse_empty(subtree):
                         if child.data or child.children]
     # Adopt text children if we have no text, but not at root.
     if not subtree.is_root():
+        data_as_list = []
         if not subtree.data:
-            subtree.data = ''
             while subtree.children and subtree.children[0].tag == "text":
-                subtree.data += subtree.children[0].data
+                data_as_list += [subtree.children[0].data]
                 subtree.children = subtree.children[1:]
-        if (not subtree.data and subtree.children and
+        if (not data_as_list and subtree.children and
                 subtree.children[0].tag == "para"):
-            subtree.data += subtree.children[0].data
+            data_as_list += [subtree.children[0].data]
             subtree.children = subtree.children[1:]
+        subtree.data += ' '.join(data_as_list)
 
 
 def process_tree(parent_node):

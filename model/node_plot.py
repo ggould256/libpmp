@@ -20,6 +20,7 @@ from matplotlib import pyplot as plt
 from numpy import linspace
 from scipy.interpolate import interp1d
 
+from common import text
 from distributions import distribution
 from distributions.operations import dist_add
 
@@ -76,7 +77,7 @@ def multi_cdf_prep(node, _):
     # pylint: disable = invalid-name, too-many-locals
     plt.xkcd()
     axes = plt.axes()
-    axes.set_xlabel("Cost of \"" + node.data[:20] + "\"")
+    axes.set_xlabel("Cost of \"" + text.pretty_truncate(node.data, 20) + "\"")
     axes.set_ylabel("Likelihood")
     colors = ["red", "blue", "black"]
     hatches = ["/", "\\", "o", "-"]
@@ -94,10 +95,11 @@ def multi_cdf_prep(node, _):
     for to_plot in nodes_to_plot:
         cost_so_far = dist_add(cost_so_far, to_plot.final_cost())
         curves.append(([cost_so_far.cdf(x) for x in xs],
-                       to_plot.get_display_name()[:20]))
+                       text.pretty_truncate(to_plot.get_display_name(), 20)))
     if node.distribution:
         # Direct cost in a node with costly children: Odd but not prohibited.
-        curves.append((total_cost, node.get_display_name()[:20]))
+        curves.append((total_cost,
+                       text.pretty_truncate(node.get_display_name(), 20)))
     legend = []
     prior_ys = 1.0
     for (ys, name) in curves:

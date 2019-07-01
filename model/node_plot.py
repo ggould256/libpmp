@@ -102,15 +102,17 @@ def multi_cdf_prep(node, _):
                        text.pretty_truncate(node.get_display_name(), 20)))
     legend = []
     prior_ys = 1.0
+    do_legend = len(curves) > 1
     for (ys, name) in curves:
         cubic_y = interp1d(xs, ys, kind="cubic")
         axes.plot(xs_dense, cubic_y(xs_dense), '-', color=colors[0])
         axes.fill_between(xs, prior_ys, ys,
                           hatch=hatches[0],
                           edgecolor=colors[0], facecolor="white")
-        if len(curves) > 1:
+        if do_legend:
             legend.append(name)
         colors = colors[1:] + colors[0:1]
         hatches = hatches[1:] + hatches[0:1]
         prior_ys = ys
-    axes.legend(legend)
+    if do_legend:
+        axes.legend(legend)

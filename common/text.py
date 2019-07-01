@@ -20,7 +20,8 @@ def pretty_truncate(text, length):
     # Matplotlib does not recognize unicode, so you can't say `u'\u2030'`
     # here.  However it does render "..." as a single character width, so you
     # can't just say it's three characters long.  Blech.
-    ELLIPSIS = "..."
-    ELLIPSIS_LEN = 1
-    if (len(text) <= length): return text
-    return text[:length - ELLIPSIS_LEN] + ELLIPSIS
+    ellipsis = "..."
+    ellipsis_len = 1
+    if len(text) <= length:
+        return text
+    return text[:length - ellipsis_len] + ellipsis

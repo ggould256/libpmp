@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TESTS = distributions/test/distribution_test.py \
+TESTS = common/test/deps_test.py \
+        distributions/test/distribution_test.py \
         distributions/test/operations_test.py \
         model/test/markdown_test.py
 
@@ -26,17 +27,9 @@ DEPSFILE = python_requirements.txt
 
 
 .DELETE_ON_ERROR:
-all: check_deps test pep8 nocrash pylint
+all: test pep8 nocrash pylint
 clean:
 	rm -rf $(RESULTSDIR)
-
-
-# Test to verify that all declared dependencies are present, as version
-# shear can cause seriously hard-to-debug failures.
-.PHONY: check_deps
-check_deps : $(DEPSFILE)
-	! (pip3 freeze | LC_COLLATE=C sort | diff - $< | grep '^>')
-
 
 # Linter rule for pep8
 .PHONY: pep8
@@ -46,7 +39,7 @@ pep8 : $(PYS)
 # Linter rule for pylint
 .PHONY: pylint
 pylint : $(PYS)
-	pylint $(PYS)
+	python3 -m pylint $(PYS)
 
 
 # Run all declared unit tests.

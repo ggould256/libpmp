@@ -77,7 +77,7 @@ def multi_cdf_prep(node, _):
     # pylint: disable = invalid-name, too-many-locals
     plt.xkcd()
     axes = plt.axes()
-    axes.set_xlabel("Cost of \"" + text.pretty_truncate(node.data, 20) + "\"")
+    axes.set_xlabel("Cost of \"" + text.pretty_truncate(node.data, 35) + "\"")
     axes.set_ylabel("Likelihood")
     colors = ["red", "blue", "black"]
     hatches = ["/", "\\", "o", "-"]
@@ -108,7 +108,8 @@ def multi_cdf_prep(node, _):
         axes.fill_between(xs, prior_ys, ys,
                           hatch=hatches[0],
                           edgecolor=colors[0], facecolor="white")
-        legend.append(name)
+        if len(curves) > 1:
+            legend.append(name)
         colors = colors[1:] + colors[0:1]
         hatches = hatches[1:] + hatches[0:1]
         prior_ys = ys

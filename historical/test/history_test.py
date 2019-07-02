@@ -17,27 +17,31 @@
 """Tests for `history`."""
 
 import unittest
-from history.history import history_from_md_texts
+from historical.history import history_from_md_texts
+
 
 class HistoryTest(unittest.TestCase):
+    """Tests for `history`."""
+
     BASIC_HISTORY = history_from_md_texts(
         ["Header\n* Item 1 {3-4}\n * Item 2 {5-6}",
          "Header\n* Item 1 {7-8}\n * Item 2 {9-10}",
-        ])
+         ])
 
     def test_basic(self):
+        """Check that history can do any node correlation at all."""
         history = self.BASIC_HISTORY
         test_node = history.entries()[-1]["model"].find_descendant(
             lambda n: n.display_name == "Item 1")
-        assert(test_node.distribution_text == "{7-8}")
-        assert(test_node)
+        assert test_node.distribution_text == "{7-8}"
+        assert test_node
         predecessors = history.predecessors(test_node)
-        assert(len(predecessors) == 1)
+        assert len(predecessors) == 1
         found = predecessors[0]
         target = history.entries()[0]["model"].find_descendant(
             lambda n: n.display_name == "Item 1")
-        assert(found == target)
-        assert(found.distribution_text == "{3-4}")
+        assert found == target
+        assert found.distribution_text == "{3-4}"
 
 
 if __name__ == '__main__':

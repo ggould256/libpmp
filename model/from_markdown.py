@@ -28,7 +28,7 @@ ESTIMATE_RE = re.compile("{[^'\"].*}$")
 HEADING_SCALE = 10
 
 
-# pylint faults this for its superclass's instance attributes, because it sucks.
+# pylint faults this for superclass instance attributes, because it sucks.
 # pylint: disable=too-many-instance-attributes
 class MarkdownNode(model.node.Node):
     """Markdown subclass of Node that retains header structure and crosslinks

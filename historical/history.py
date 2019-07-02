@@ -35,16 +35,20 @@ class History:
         self._entries = []
 
     def add_entry(self, entry):
+        """Add an entry to the history"""
         self._entries.append(entry)
         self._entries.sort(key=lambda e: e["date"])
 
     def add_model(self, model, sort_date):
+        """Add a model to the history, with the given date."""
         self.add_entry({"model": model, "date": sort_date})
 
     def entries(self):
+        """Get the entries in this history."""
         return self._entries
 
     def most_recent_date(self):
+        """Return the date of the most recent entry in this history."""
         return self._entries[-1]["date"]
 
     def predecessors(self, node):
@@ -57,11 +61,12 @@ class History:
         """
         # TODO(ggould) This is a grossly inadequate algorithm.  Some sort of
         # fuzzy or levenshtein approach would be superior.
-        identifier = lambda node: node.node_name or node.display_name
+        def identifier(node):
+            return node.node_name or node.display_name
+
         for i in range(len(self._entries) - 1, 0, -1):
             entry = self._entries[i]
             if entry["model"].has_descendant(node):
-                model_with_node = entry["model"]
                 prior_model = self._entries[i - 1]["model"]
                 break
         else:
@@ -75,7 +80,7 @@ class History:
 
 def history_from_md_texts(texts):
     """Make a `History` from a list of markdown text.  For testing purposes."""
-    h = History()
-    for (i, f) in enumerate(texts):
-        h.add_model(from_markdown(f), i)
-    return h
+    hist = History()
+    for (i, text) in enumerate(texts):
+        hist.add_model(from_markdown(text), i)
+    return hist

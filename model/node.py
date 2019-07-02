@@ -98,7 +98,7 @@ class Node:
         return any(child.has_descendant(other_node) for child in self.children)
 
     def find_descendant(self, predicate):
-        """@return a descendant node for which `predicate()` is True, or None"""
+        """@return a descendant node for whom `predicate()` is True, or None"""
         self.check_valid()
         if predicate(self):
             return self

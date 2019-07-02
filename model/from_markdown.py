@@ -23,10 +23,13 @@ import CommonMark.render.renderer
 import model.node
 
 
-ESTIMATE_RE = re.compile('{.*}$')
+NODENAME_RE = re.compile("{['\"].*['\"]}$")
+ESTIMATE_RE = re.compile("{[^'\"].*}$")
 HEADING_SCALE = 10
 
 
+# pylint faults this for its superclass's instance attributes, because it sucks.
+# pylint: disable=too-many-instance-attributes
 class MarkdownNode(model.node.Node):
     """Markdown subclass of Node that retains header structure and crosslinks
     to the markdown AST."""
@@ -37,6 +40,7 @@ class MarkdownNode(model.node.Node):
         self.level = None  # For header nodes, the header level.
         self.ast = None  # Markdown AST node corresponding to this.
         self.display_name = ""
+        self.node_name = None  # To unify the same node across multiple models.
 
 
 class NodeParser(CommonMark.render.renderer.Renderer):
@@ -95,8 +99,13 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         self._start_child(None, node)
         self.current.tag = "text"
         self.current.parser_diag = "text following " + parent_tag
-        self.current.data += node.literal.rstrip()
+        self.current.data += node.literal
         self._ascend()
+
+    def softbreak(self, node, entering):
+        """Process a softbreak as if it were a literal space."""
+        node.literal = " "
+        self.text(node, entering)
 
     def paragraph(self, node, entering):
         """Create a paragraph child of the current node."""
@@ -156,21 +165,23 @@ def collapse_empty(subtree):
     # Recursively simplify the child subtrees.
     for child in subtree.children:
         collapse_empty(child)
+
     # Eliminate any vacuous children.
     subtree.children = [child for child in subtree.children
                         if child.data or child.children]
+
     # Adopt text children if we have no text, but not at root.
     if not subtree.is_root():
-        data_as_list = []
         if not subtree.data:
+            data_as_list = []
             while subtree.children and subtree.children[0].tag == "text":
                 data_as_list += [subtree.children[0].data]
                 subtree.children = subtree.children[1:]
-        if (not data_as_list and subtree.children and
+            subtree.data = ''.join(data_as_list)
+        if (not subtree.data and subtree.children and
                 subtree.children[0].tag == "para"):
-            data_as_list += [subtree.children[0].data]
+            subtree.data += subtree.children[0].data
             subtree.children = subtree.children[1:]
-        subtree.data += ' '.join(data_as_list)
 
 
 def process_tree(parent_node):
@@ -178,6 +189,14 @@ def process_tree(parent_node):
     # Do all children first.
     for child in parent_node.children:
         process_tree(child)
+
+    # Grab a nodename if there is one.
+    possible_names = NODENAME_RE.findall(parent_node.data)
+    if len(possible_names) > 1:
+        raise RuntimeError('multiple node names found in one block: ' +
+                           str(possible_names))
+    if len(possible_names) == 1:
+        parent_node.node_name = possible_names[0]
 
     # Then look for a distribution in our data.
     possible_data = ESTIMATE_RE.findall(parent_node.data)

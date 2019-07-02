@@ -43,6 +43,21 @@ Heading
         self.assertAlmostEqual(cost.quantile(0.1), 8, delta=0.01)
         self.assertAlmostEqual(cost.quantile(0.75), 40, delta=0.01)
 
+    NODENAME_MD = """\
+Heading
+ * single bullet {"my_node_name"}
+"""
+
+    def test_nodename(self):
+        """Check that nodenames get extracted."""
+        model = from_markdown(self.NODENAME_MD)
+        self.assertEqual(model.tag, "root")
+        self.assertEqual(len(model.children), 2)
+        self.assertEqual(model.children[0].data, "Heading")
+        self.assertEqual(model.children[1].data,
+                         'single bullet {"my_node_name"}')
+        self.assertEqual(model.children[1].node_name, '{"my_node_name"}')
+
     TEXT_AND_BULLETS_MD = """\
 Text
  * bullet {8-40}
@@ -57,6 +72,23 @@ Text
         self.assertEqual(model.children[0].data, "Text")
         self.assertEqual(model.children[1].data, "bullet {8-40}")
         self.assertEqual(model.children[2].data, "bullet {8-40}")
+
+    MULTILINE_MD = """\
+Text that goes on
+for more than one line
+ * bullet that goes on
+   for more than one line
+"""
+
+    def test_multiline(self):
+        """Check that we correctly handle multiline text."""
+        model = from_markdown(self.MULTILINE_MD)
+        self.assertEqual(model.tag, "root")
+        self.assertEqual(len(model.children), 2)
+        self.assertEqual(model.children[0].data,
+                         "Text that goes on for more than one line")
+        self.assertEqual(model.children[1].data,
+                         "bullet that goes on for more than one line")
 
     HEADERS_AND_ITEMS_MD = """\
 Headline

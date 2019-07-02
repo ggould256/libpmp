@@ -88,6 +88,26 @@ class Node:
         return '(%s,%s,%s)' % tuple(fmt(self.distribution.quantile(p))
                                     for p in [0.1, 0.5, 0.9])
 
+    def has_descendant(self, other_node):
+        """@return true iff some descendant of this node `is` @p other_node."""
+        self.check_valid()
+        if self is other_node:
+            return True
+        if not self.children:
+            return False
+        return any(child.has_descendant(other_node) for child in self.children)
+
+    def find_descendant(self, predicate):
+        """@return a descendant node for which `predicate()` is True, or None"""
+        self.check_valid()
+        if predicate(self):
+            return self
+        for child in self.children:
+            result = child.find_descendant(predicate)
+            if result is not None:
+                return result
+        return None
+
     def has_cost(self):
         """Return True iff this node has any cost."""
         self.check_valid()

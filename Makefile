@@ -15,6 +15,7 @@
 TESTS = common/test/deps_test.py \
         distributions/test/distribution_test.py \
         distributions/test/operations_test.py \
+        history/test/history_test.py \
         model/test/markdown_test.py
 
 PYS = $(shell git ls-tree -r HEAD . --name-only | grep py$$ )

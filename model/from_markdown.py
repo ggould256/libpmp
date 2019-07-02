@@ -41,6 +41,7 @@ class MarkdownNode(model.node.Node):
         self.ast = None  # Markdown AST node corresponding to this.
         self.display_name = ""
         self.node_name = None  # To unify the same node across multiple models.
+        self.distribution_text = None  # For testing purposes.
 
 
 class NodeParser(CommonMark.render.renderer.Renderer):
@@ -204,9 +205,11 @@ def process_tree(parent_node):
         raise RuntimeError('multiple estimates found in one block: ' +
                            str(possible_data))
     if len(possible_data) == 1:
+        parent_node.distribution_text = possible_data[0]
         parent_node.distribution = model.node.make_distribution(
             possible_data[0])
-        parent_node.display_name = ESTIMATE_RE.split(parent_node.data)[0]
+
+    parent_node.display_name = parent_node.data.split("{")[0].rstrip()
 
 
 def from_markdown(markdown_text):

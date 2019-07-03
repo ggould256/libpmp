@@ -47,15 +47,25 @@ class History:
         """Get the entries in this history."""
         return self._entries
 
+    def oldest_date(self):
+        """Return the date of the first entry in this history."""
+        return self._entries[0]["date"]
+
     def most_recent_date(self):
         """Return the date of the most recent entry in this history."""
         return self._entries[-1]["date"]
+
+    def most_recent_model(self):
+        """Return the model of the most recent entry in this history."""
+        return self._entries[-1]["model"]
 
     def predecessors(self, node):
         """Compute the recent history of a node.
 
         For a @p node compute the nodes in the prior entry that are its
-        logical predecessors.
+        logical predecessors.  @return (date, [nodes]) for those predecessors,
+        where the nodes list may be empty if there are no predecessors, or
+        None if there is no prior entry.
 
         NOTE:  Currently finds only at most one exact predecessor.
         """
@@ -67,15 +77,43 @@ class History:
         for i in range(len(self._entries) - 1, 0, -1):
             entry = self._entries[i]
             if entry["model"].has_descendant(node):
+                prior_date = self._entries[i - 1]["date"]
                 prior_model = self._entries[i - 1]["model"]
                 break
         else:
-            return []  # Ran out of history without finding a predecessor.
+            return None  # Ran out of history without finding a predecessor.
+        # TODO(ggould) Find more priors using a fuzzier match.
         prior_node = prior_model.find_descendant(
             lambda n: identifier(n) == identifier(node))
         if prior_node:
-            return [prior_node]
-        return []
+            return (prior_date, [prior_node])
+        return (prior_date, [])
+
+    def get_linear_history(self, node):
+        """Return a list [(date, {node})] for a node.
+
+        Recursively reads out the predecessor tree of @p node at every date in
+        this history.  The last entry in the result will be `node`.
+        """
+        result = []
+        working_set = {node}
+        working_date = self.most_recent_date()
+        while working_set:
+            result = [(working_date, working_set)] + result
+            new_working_date = None
+            new_working_set = set()
+            for working_node in working_set:
+                predecessors_result = self.predecessors(working_node)
+                if predecessors_result is None:
+                    break
+                prior_date, predecessors = predecessors_result
+                new_working_set.update(predecessors)
+                if new_working_date:
+                    assert new_working_date == prior_date
+                new_working_date = prior_date
+            working_date = new_working_date
+            working_set = new_working_set
+        return result
 
 
 def history_from_md_texts(texts):

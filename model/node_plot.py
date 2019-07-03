@@ -76,7 +76,7 @@ def multi_cdf_prep(node, _):
     ones.
     """
     # pylint: disable = invalid-name, too-many-locals
-    plt.xkcd()
+    plt.xkcd()  # Represent approximate/unfounded estimates with xkcd art.
     axes = plt.axes()
     axes.set_xlabel("Cost of \"" + text.pretty_truncate(node.data, 35) + "\"")
     axes.set_ylabel("Likelihood")

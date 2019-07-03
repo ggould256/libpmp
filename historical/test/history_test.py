@@ -35,7 +35,8 @@ class HistoryTest(unittest.TestCase):
             lambda n: n.display_name == "Item 1")
         assert test_node.distribution_text == "{7-8}"
         assert test_node
-        predecessors = history.predecessors(test_node)
+        (previous_date, predecessors) = history.predecessors(test_node)
+        assert previous_date == 0
         assert len(predecessors) == 1
         found = predecessors[0]
         target = history.entries()[0]["model"].find_descendant(
@@ -43,6 +44,14 @@ class HistoryTest(unittest.TestCase):
         assert found == target
         assert found.distribution_text == "{3-4}"
 
+    def test_linear_history(self):
+        history = self.BASIC_HISTORY
+        test_node = history.entries()[1]["model"].find_descendant(
+            lambda n: n.display_name == "Item 1")
+        previous_node = history.entries()[0]["model"].find_descendant(
+            lambda n: n.display_name == "Item 1")
+        linear_history = history.get_linear_history(test_node)
+        assert linear_history == [(0, {previous_node}), (1, {test_node})]
 
 if __name__ == '__main__':
     unittest.main()

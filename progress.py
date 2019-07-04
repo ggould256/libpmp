@@ -22,6 +22,7 @@ import argparse
 from historical.history import history_from_md_texts
 from historical.report import structure_dump_with_history
 
+
 def main():
     """Parse command line args, load estimates, and generate a report."""
     parser = argparse.ArgumentParser(description=__doc__)

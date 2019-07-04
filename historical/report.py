@@ -19,6 +19,7 @@ Reports on histories.
 from historical.burndown import create_burndown_html
 from report.enhanced_html import HEADER, FOOTER
 
+
 def dump_node(indent, node, history, level, args):
     """@return a description of the given node."""
     result = ""

@@ -75,8 +75,10 @@ def _plot_burndown(history, node):
     axes = _burndown_axes(history, node)
     costs = _get_historical_costs(history, node)
     dates = [date for (date, _) in costs]
+
     def quantile_history(q):
         return [cost.quantile(q) for (date, cost) in costs]
+
     axes.fill_between(dates, quantile_history(0.1), quantile_history(0.9),
                       hatch="/", edgecolor="red")
     axes.fill_between(dates, quantile_history(0.25), quantile_history(0.75),

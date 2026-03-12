@@ -6,8 +6,7 @@ name: Run tests
 # or API.
 on:
   workflow_dispatch:
-    # Inputs the workflow accepts.
-    inputs: {}
+  push:
 
 jobs:
   test:

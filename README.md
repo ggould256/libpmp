@@ -52,7 +52,8 @@ or
 
 * You cannot commit until I (ggould256) add you as a contributor.
 * Your first commit must add your name to the [`AUTHORS` file](AUTHORS).
-* Please run the checks listed above.
+* The tests listed above can be run via `./test/run_tests.sh`, which is also
+  run as a github action on each push.
 
 ## Design Principles
 

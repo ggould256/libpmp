@@ -26,6 +26,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+pylock.toml
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -36,6 +37,9 @@ var/
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+
+# IDEs
+.vscode
 
 # Unit test / coverage reports
 htmlcov/

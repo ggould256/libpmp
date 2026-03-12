@@ -16,9 +16,9 @@
 
 import re
 
-import CommonMark
-import CommonMark.blocks
-import CommonMark.render.renderer
+import commonmark
+import commonmark.blocks
+import commonmark.render.renderer
 
 import libpmp.model.node
 
@@ -43,7 +43,7 @@ class MarkdownNode(libpmp.model.node.Node):
         self.distribution_text = None  # For testing purposes.
 
 
-class NodeParser(CommonMark.render.renderer.Renderer):
+class NodeParser(commonmark.render.renderer.Renderer):
     """Take a parser stream from a markdown file of estimates and turn it into
     a model for estimation.
 
@@ -77,7 +77,7 @@ class NodeParser(CommonMark.render.renderer.Renderer):
         assert self.current != self.root
         self.current = self.current.parent
 
-    # During the parse, CommonMark will stream events at us.  These will
+    # During the parse, commonmark will stream events at us.  These will
     # be structurally balanced enter/exits of a variety of element types
     # interspersed with text content.  We maintain self.current at the
     # currently open structure; enters cause descent, texts cause children,
@@ -213,7 +213,7 @@ def process_tree(parent_node):
 
 def from_markdown(markdown_text):
     """Parse markdown text into a `model.Node` tree."""
-    parser = CommonMark.blocks.Parser()
+    parser = commonmark.blocks.Parser()
     ast = parser.parse(markdown_text)
 
     parser = NodeParser()

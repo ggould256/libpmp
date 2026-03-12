@@ -1,5 +1,5 @@
 astroid==2.2.5
-certifi==2019.3.9
+certifi==2024.7.4
 CommonMark>=0.7.0
 cycler==0.10.0
 future>=0.15.2
